@@ -318,3 +318,5 @@ Class XMLParser
 ## КОММЕНТАРИИ АВТОРА
 
     E Jet: Это заколдованный парсер в котором хочется срать.
+
+Благодарность за идею [stakanyash](https://github.com/stakanyash).
