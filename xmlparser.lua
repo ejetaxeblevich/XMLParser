@@ -1221,9 +1221,9 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     end
 
     local fast_content, content, firstLine, lastLine = CheckXMLParserFileForTree(put_inParams)
-    -- if not fast_content then
-    --     return nil
-    -- end
+    if not fast_content then
+        return nil
+    end
 
     if not CheckItemClass(put_inParams, treeParams) then
         return nil
@@ -1490,30 +1490,21 @@ function XMLParser:getTree(treeParams, put_in)
             treeData[2][item]["_itemProperties"] = {}
             parserLOG("+ Item: "..treeData[2][item]["_itemTag"])
             
-            local gotAnyValueInTAG = string.find(content[curLine], findParamPattern)
-            if gotAnyValueInTAG then
-                local itemFirstLineParams = SliceParamsForCommentLines(content[curLine])
-                
-                for i, line in ipairs(itemFirstLineParams) do
-                    --parserLOG("{"..line.."}")
-                    local _, _, getStrParam, getStrValue = string.find(line, findParamPattern)
-                    if getStrParam and getStrValue then
-                        parserLOG("\t| {"..getStrParam.."} {"..getStrValue.."}")
+            local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+            if getStrParam and getStrValue then
+                parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
-                        treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
-                    end
-                end
-            else
-                repeat
-                    local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
-                    if getStrParam and getStrValue then
-                        parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
-
-                        treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
-                    end
-                    curLine=curLine+1
-                until string.find(content[curLine-1], ">")
+                treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
             end
+            repeat
+                curLine=curLine+1
+                local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+                if getStrParam and getStrValue then
+                    parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
+
+                    treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
+                end
+            until string.find(content[curLine-1], ">")
 
             --childs
             if getItemClass=="object" then
@@ -1572,7 +1563,9 @@ function XMLParser:getTree(treeParams, put_in)
         if content[curLine] == startTabs.."</"..treeName..">" then
             break
         end
-        curLine = curLine + 1
+        if not string.find(content[curLine], startTabs.."\t"..findObjectPattern) and (content[curLine] ~= startTabs.."</"..treeName..">") then
+            curLine = curLine + 1
+        end
     until content[curLine] == startTabs.."</"..treeName..">"
 
     local treeParams = treeData[1][lastStringParam]
@@ -1756,7 +1749,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
         return nil
     end
 
-    local exists, objectParams, content, firstLine, lastLine = CheckXMLParserFileTreeForItem(put_inParams, objectParams)
+    local exists, _, content, firstLine, lastLine = CheckXMLParserFileTreeForItem(put_inParams, objectParams)
     if exists then
         return nil
     end
@@ -2438,7 +2431,7 @@ function XMLParser:Tree(treeParams)
 
             if tree then
                 local line = tree["_itemLine"]
-                println("line : "..line)
+                --println("line : "..line)
                 removed = XMLParser:removeTree(objectParams, line)
             end
         else
@@ -3077,12 +3070,16 @@ function XMLParser:Tree(treeParams)
         
         if objectById then
             object = objectById
+            --println("id")
         elseif objectByCustomKey then
             object = objectByCustomKey
+            --println("CustomKey")
         elseif objectByName then
             object = objectByName
-        elseif objectByTag then
+            --println("Name")
+        elseif objectByTag and not stringCustomKey then
             object = objectByTag
+            --println("Tag")
         end
         if tableObjectTagXorCustomKey[1] and tableObjectTagXorCustomKey[2] then
             if objectByCustomKey and objectByTag then
@@ -3097,6 +3094,8 @@ function XMLParser:Tree(treeParams)
             parserPRINT("Obj '"..stringObjectTag.."' does not exist")
             return nil
         end
+
+        --parserLOG(tostring(_TableToString(object)))
 
         OBJ = {
             _object = object
