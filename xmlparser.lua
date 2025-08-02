@@ -1273,6 +1273,7 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
                 local genTree_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..treeParams[key]..'"'
                 curLine=curLine+1
                 table.insert(content, curLine, genTree_paramTag)
+                treeParams[key] = nil
             end
         end
     end
@@ -1282,6 +1283,7 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
                 local genTree_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..value..'"'
                 curLine=curLine+1
                 table.insert(content, curLine, genTree_paramTag)
+                treeParams[key] = nil
             end
         end
     end
@@ -1501,10 +1503,20 @@ function XMLParser:getTree(treeParams, put_in)
                         treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
                     end
                 end
+            else
+                repeat
+                    local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+                    if getStrParam and getStrValue then
+                        parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
+
+                        treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
+                    end
+                    curLine=curLine+1
+                until string.find(content[curLine-1], ">")
             end
 
             --childs
-            if string.find(content[curLine], "/>") then
+            if getItemClass=="object" then
                 parserLOG("========================= skipGetChilds")
             else
                 local child = 1
@@ -1786,6 +1798,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
                 local genObject_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..objectParams[key]..'"'
                 curLine=curLine+1
                 table.insert(content, curLine, genObject_paramTag)
+                objectParams[key] = nil
             end
         end
     end
@@ -1795,6 +1808,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
                 local genObject_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..value..'"'
                 curLine=curLine+1
                 table.insert(content, curLine, genObject_paramTag)
+                objectParams[key] = nil
             end
         end
     end
@@ -1822,12 +1836,12 @@ function XMLParser:removeObject(treeParams, objectParams)
     local treeName = treeParams["_itemTag"] or EX_XMLParserROOT
 
     local KeyForSearch
-    if itemParams["Name"]           then KeyForSearch = "Name"
-    elseif itemParams["name"]       then KeyForSearch = "name"
-    elseif itemParams["ObjectId"]   then KeyForSearch = "ObjectId"
-    elseif itemParams["Id"]         then KeyForSearch = "Id"
-    elseif itemParams["id"]         then KeyForSearch = "id"
-    elseif itemParams["_customValue"] then KeyForSearch = "_customValue" end
+    if objectParams["Name"]           then KeyForSearch = "Name"
+    elseif objectParams["name"]       then KeyForSearch = "name"
+    elseif objectParams["ObjectId"]   then KeyForSearch = "ObjectId"
+    elseif objectParams["Id"]         then KeyForSearch = "Id"
+    elseif objectParams["id"]         then KeyForSearch = "id"
+    elseif objectParams["_customValue"] then KeyForSearch = "_customValue" end
     
     local treeData, content, firstLine, lastLine = XMLParser:getTree(treeParams)
 
