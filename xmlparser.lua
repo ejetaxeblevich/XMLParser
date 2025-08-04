@@ -1257,7 +1257,9 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     local curLine = firstLine
     local genTree_upTag = savedTabs.."\t<"..tostring(treeParams["_itemTag"])
     if EX_XMLParserENTERS then
-        genTree_upTag = "\n"..genTree_upTag
+        if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], '"%s*>')) or (string.find(content[firstLine], '<[^>]>?')) then
+            genTree_upTag = "\n"..genTree_upTag
+        end
     end
     table.insert(content, firstLine, genTree_upTag)
 
@@ -1796,7 +1798,9 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     local curLine = firstLine
     local genObject_upTag = savedTabs.."\t<"..tostring(objectParams["_itemTag"])
     if EX_XMLParserENTERS then
-        genObject_upTag = "\n"..genObject_upTag
+        if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], "<[^>]>?")) then
+            genObject_upTag = "\n"..genObject_upTag
+        end
     end
     table.insert(content, firstLine, genObject_upTag)
 
