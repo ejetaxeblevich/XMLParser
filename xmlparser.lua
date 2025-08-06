@@ -1258,11 +1258,11 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
 
     local curLine = firstLine
     local genTree_upTag = savedTabs.."\t<"..tostring(treeParams["_itemTag"])
-    if EX_XMLParserENTERS then
-        if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], '"%s*>')) or (string.find(content[firstLine], '<[^>]>?')) then
-            genTree_upTag = "\n"..genTree_upTag
-        end
-    end
+    -- if EX_XMLParserENTERS then
+    --     if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], '"%s*>')) or (string.find(content[firstLine], '<[^>]>?')) then
+    --         genTree_upTag = "\n"..genTree_upTag
+    --     end
+    -- end
     table.insert(content, firstLine, genTree_upTag)
 
     local strSpaces = ""
@@ -1295,15 +1295,17 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     end
     content[curLine] = content[curLine]..">"
 
+    curLine = curLine + 1
+
     local genTree_downTag = savedTabs.."\t</"..tostring(treeParams["_itemTag"])..">"
     
     if EX_XMLParserENTERS then
-        if string.find(content[curLine+1], "<[^/>]>?") then
+        if string.find(content[curLine], "<[^/>]>?") then
             genTree_downTag = genTree_downTag.."\n"
         end
     end
 
-    table.insert(content, curLine+1, genTree_downTag)
+    table.insert(content, curLine, genTree_downTag)
 
     --LOG("addtree "..tostring(treeParams["_itemTag"]))
     --LOG("\n".._TableToString(content))
@@ -1342,6 +1344,16 @@ function XMLParser:removeTree(treeParams, startLine)
         table.remove(content, firstLine)
     end
     table.remove(content, firstLine)
+
+    firstLine = firstLine - 1
+    while (string.find(content[firstLine], "[\t*]") or string.find(content[firstLine], "%s*")) and not string.find(content[firstLine], ">") do
+        table.remove(content, firstLine)
+        firstLine = firstLine - 1
+    end
+    firstLine = firstLine + 1
+    while (string.find(content[firstLine], "[\t*]") or string.find(content[firstLine], "%s*")) and not string.find(content[firstLine], ">") do
+        table.remove(content, firstLine)
+    end
 
     treeParams["Name"] = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or nil
     parserLOG("[I] Module XMLParser.lua === Tree <"..treeParams["_itemTag"].."> with value \""..tostring(treeParams["Name"]).."\" in '"..EX_XMLParserPATH.."' deleted succesfully")
@@ -1809,11 +1821,11 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
 
     local curLine = firstLine
     local genObject_upTag = savedTabs.."\t<"..tostring(objectParams["_itemTag"])
-    if EX_XMLParserENTERS then
-        if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], "<[^>]>?")) then
-            --genObject_upTag = "\n"..genObject_upTag
-        end
-    end
+    -- if EX_XMLParserENTERS then
+    --     if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], "<[^>]>?")) then
+    --         genObject_upTag = "\n"..genObject_upTag
+    --     end
+    -- end
     table.insert(content, firstLine, genObject_upTag)
 
     local strSpaces = ""
@@ -1922,6 +1934,16 @@ function XMLParser:removeObject(treeParams, objectParams)
             table.remove(content, objLine)
         end
         table.remove(content, objLine)
+
+        objLine = objLine - 1
+        while (string.find(content[objLine], "[\t*]") or string.find(content[objLine], "%s*")) and not string.find(content[objLine], ">") do
+            table.remove(content, objLine)
+            objLine = objLine - 1
+        end
+        objLine = objLine + 1
+        while (string.find(content[objLine], "[\t*]") or string.find(content[objLine], "%s*")) and not string.find(content[objLine], "<") do
+            table.remove(content, objLine)
+        end
 
         parserLOG("[I] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' deleted succesfully")
         parserPRINT("Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' deleted succesfully")
