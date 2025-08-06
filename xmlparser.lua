@@ -664,7 +664,9 @@ local function WriteXMLParserFileForTable(content)
     local path = EX_XMLParserPATH
     local file = io.open(path, "w")
     local l=1
+    --LOG("START WRITING")
     while content[l]~=nil do
+        --LOG("WRITED :: "..tostring(content[l]))
         file:write(content[l].."\n")
         l=l+1
     end
@@ -1294,9 +1296,19 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     content[curLine] = content[curLine]..">"
 
     local genTree_downTag = savedTabs.."\t</"..tostring(treeParams["_itemTag"])..">"
-    table.insert(content, curLine+1, genTree_downTag)
     
+    if EX_XMLParserENTERS then
+        if string.find(content[curLine+1], "<[^/>]>?") then
+            genTree_downTag = genTree_downTag.."\n"
+        end
+    end
+
+    table.insert(content, curLine+1, genTree_downTag)
+
+    --LOG("addtree "..tostring(treeParams["_itemTag"]))
+    --LOG("\n".._TableToString(content))
     WriteXMLParserFileForTable(content)
+
     return true
 end
 
@@ -1799,7 +1811,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     local genObject_upTag = savedTabs.."\t<"..tostring(objectParams["_itemTag"])
     if EX_XMLParserENTERS then
         if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], "<[^>]>?")) then
-            genObject_upTag = "\n"..genObject_upTag
+            --genObject_upTag = "\n"..genObject_upTag
         end
     end
     table.insert(content, firstLine, genObject_upTag)
@@ -1833,8 +1845,17 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
         end
     end
     content[curLine] = content[curLine].." />"
-    
+
+    if EX_XMLParserENTERS then
+        if string.find(content[curLine+1], "<[^/>]>?") then
+            content[curLine] = content[curLine].."\n"
+        end
+    end
+
+    --LOG("addobject "..tostring(objectParams["_itemTag"]))
+    --LOG("\n".._TableToString(content))
     WriteXMLParserFileForTable(content)
+
     return true
 end
 
