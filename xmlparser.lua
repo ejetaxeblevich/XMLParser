@@ -3006,7 +3006,7 @@ function XMLParser:Tree(treeParams)
                 if not content[firstLine] then
                     break
                 end
-                if content[firstLine]=="\t*" or content[firstLine]=="%s*" or content[firstLine]=="" then
+                if (content[firstLine]=="\t*") or (content[firstLine]=="%s*") or (content[firstLine]=="") then
                     table.remove(content, firstLine)
                 end
             end
@@ -3037,7 +3037,7 @@ function XMLParser:Tree(treeParams)
                 if not content[firstLine] or content[firstLine]==savedTabs.."</"..tag..">" then
                     break
                 end
-                if (string.find(content[firstLine], "/>") or string.find(content[firstLine], "</")) and not (content[firstLine+1]=="\t*" or content[firstLine]=="%s*" or content[firstLine]=="") and content[firstLine+1]~=savedTabs.."</"..tag..">" then
+                if (string.find(content[firstLine], "/>") or string.find(content[firstLine], "</")) and not ((content[firstLine+1]=="\t*") or (content[firstLine+1]=="%s*") or (content[firstLine+1]=="")) and content[firstLine+1]~=savedTabs.."</"..tag..">" then
                     table.insert(content, firstLine+1, "")
                 end
             end
