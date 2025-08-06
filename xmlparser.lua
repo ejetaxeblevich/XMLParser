@@ -273,6 +273,7 @@
 --             [M] bool AddEnters()          /* Добавляет отступы между элементами, если нет */
 --             [M] bool CleanEnters()        /* Убирает отступы между элементами, если есть */
 -- 
+--
 --             Class OBJ
 --             {
 --                 [M] object GetObj( table ObjectTagXorCustomKey ) : public Tree       /* Это прямое обращение к объекту OBJ: {"TagName", "ObjectParameter"}. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
