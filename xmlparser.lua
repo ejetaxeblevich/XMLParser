@@ -270,6 +270,8 @@
 --             [M] bool Unwrap()     /* Разворачивает выбранное дерево */
 --             [M] bool WrapAllItems()       /* Сворачивает все items дерева */
 --             [M] bool UnwrapAllItems()     /* Разворачивает все items дерева */
+--             [M] bool AddEnters()          /* Добавляет отступы между элементами, если нет */
+--             [M] bool CleanEnters()        /* Убирает отступы между элементами, если есть */
 -- 
 --             Class OBJ
 --             {
@@ -1533,19 +1535,28 @@ function XMLParser:getTree(treeParams, put_in)
             
             local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
             if getStrParam and getStrValue then
-                parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
+                local itemFirstLineParams = SliceParamsForCommentLines(content[curLine])
+                --parserLOG(content[curLine])
+                for i, line in ipairs(itemFirstLineParams) do
+                    local _, _, getStrParam, getStrValue = string.find(line, findParamPattern)
+                    if getStrParam and getStrValue then
+                        parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
-                treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
-            end
-            repeat
-                curLine=curLine+1
-                local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
-                if getStrParam and getStrValue then
-                    parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
-
-                    treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
+                        treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
+                    end
                 end
-            until string.find(content[curLine-1], ">")
+                curLine=curLine+1
+            else
+                repeat
+                    curLine=curLine+1
+                    local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+                    if getStrParam and getStrValue then
+                        parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
+
+                        treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
+                    end
+                until string.find(content[curLine-1], ">")
+            end
 
             if not content[curLine] then
                 break
@@ -1672,6 +1683,7 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
                 item["_itemProperties"][tostring(getStrParam)] = getStrValue
             end
         end
+        curLine=curLine+1
     else
         --parserLOG("not gotAnyValueInTREETAG "..content[curLine])
         repeat
@@ -2973,6 +2985,71 @@ function XMLParser:Tree(treeParams)
 
 
 
+    function TREE:CleanEnters()
+        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:CleanEnters ::::")
+        TREE:tryUpdate()
+
+        if TREE["firstLine"] and TREE["content"] and TREE["treeName"] then
+            local firstLine = TREE["firstLine"]
+            local content = TREE["content"]
+            local tag = TREE["treeName"]
+            
+            local savedTabs = ""
+            local _, _, savedTabss = string.find(content[firstLine], "(\t*)")
+            if savedTabss then
+                savedTabs = savedTabss
+            end
+
+            while content[firstLine]~=savedTabs.."</"..tag..">" do
+                firstLine=firstLine+1
+                if not content[firstLine] then
+                    break
+                end
+                if content[firstLine]=="\t*" or content[firstLine]=="%s*" or content[firstLine]=="" then
+                    table.remove(content, firstLine)
+                end
+            end
+
+            WriteXMLParserFileForTable(content)
+            return true
+        end
+        
+        return nil
+    end
+    function TREE:AddEnters()
+        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:AddEnters ::::")
+        TREE:tryUpdate()
+
+        if TREE["firstLine"] and TREE["content"] and TREE["treeName"] then
+            local firstLine = TREE["firstLine"]
+            local content = TREE["content"]
+            local tag = TREE["treeName"]
+            
+            local savedTabs = ""
+            local _, _, savedTabss = string.find(content[firstLine], "(\t*)")
+            if savedTabss then
+                savedTabs = savedTabss
+            end
+
+            while content[firstLine]~=savedTabs.."</"..tag..">" do
+                firstLine=firstLine+1
+                if not content[firstLine] or content[firstLine]==savedTabs.."</"..tag..">" then
+                    break
+                end
+                if (string.find(content[firstLine], "/>") or string.find(content[firstLine], "</")) and not (content[firstLine+1]=="\t*" or content[firstLine]=="%s*" or content[firstLine]=="") and content[firstLine+1]~=savedTabs.."</"..tag..">" then
+                    table.insert(content, firstLine+1, "")
+                end
+            end
+
+            WriteXMLParserFileForTable(content)
+            return true
+        end
+        
+        return nil
+    end
+
+
+
     function TREE:CaptureInnerTree(tableTreeTagXorCustomKey)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:CaptureInnerTree ::::")
         TREE:tryUpdate()
@@ -3101,7 +3178,7 @@ function XMLParser:Tree(treeParams)
             local item = 1
             while TREE["treeData"][2][item]~=nil do
                 if not TREE:tryUpdate() then
-                    parserLOG("[E] Module XMLParser.lua === Please, enable AutoUpdateTree() for work this function")
+                    LOG("[E] Module XMLParser.lua === Please, enable AutoUpdateTree() for work this function")
                     parserPRINT("Please, enable AutoUpdateTree() for work this function")
                     return nil
                 end
