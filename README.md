@@ -4,10 +4,10 @@
 
 ### Note: Please translate this text, if it nessesary.
 
- Этот readme не имеет красивого оформления, поэтому используйте поиск по тексту вверху справа.
- <div align="center">
- <img width="114" height="92" alt="image" src="https://github.com/user-attachments/assets/9ed52681-407d-44c1-8a02-6df8c0cbd563" />
- </div>
+[comment]: <> ( Этот readme не имеет красивого оформления, поэтому используйте поиск по тексту вверху справа.)
+[comment]: <> ( <div align="center">)
+[comment]: <> ( <img width="114" height="92" alt="image" src="https://github.com/user-attachments/assets/9ed52681-407d-44c1-8a02-6df8c0cbd563" />)
+[comment]: <> ( </div>)
 
 
 ## ЧТО ЭТО
