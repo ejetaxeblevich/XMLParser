@@ -721,7 +721,7 @@ local function UnwrapItemForCommentLines(comment)
         }
     ]]
 
-    local findParamPattern = '[^<]*%s*=+%s*"[^"]*"'
+    local findParamPattern = '[^<\t]*%s*=+%s*"[^"]*"'
 
     local savedTabs = ""
     local _, _, savedTabss = string.find(comment, "(\t*)<")
@@ -1415,8 +1415,8 @@ function XMLParser:getTree(treeParams, put_in)
     -- parserLOG("das "..content[firstLine])
     -- parserLOG("folder "..content[folder_firstLine])
 
-    local findObjectPattern = '%s*<([^>%s%/]+)>?[/%s]?'
-    local findParamPattern = '%s+([^<]*)%s*=+%s*"([^"]*)"'
+    local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
+    local findParamPattern = '%s+([^<\t]*)%s*=+%s*"([^"]*)"'
 
     local startTabs = ""
     local _,_, tabss = string.find(content[firstLine], "(\t*)<")
@@ -1657,8 +1657,8 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
     item["_itemParent"] = parentName
     item["_itemLine"] = curLine
     
-    local findObjectPattern = '%s*<([^>%s%/]+)>?[/%s]?'
-    local findParamPattern = '%s+([^<]*)%s*=+%s*"([^"]*)"';
+    local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
+    local findParamPattern = '%s+([^<\t]*)%s*=+%s*"([^"]*)"';
 
     _,_, item["_itemTag"] = string.find(content[curLine], findObjectPattern)
     item["_itemClass"] = XMLParser:getItemClass(content, curLine, item["_itemTag"])
@@ -1719,6 +1719,9 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
             else
                 curLine=curLine+1
             end
+            if not content[curLine] then
+                break
+            end
         end
     end
 
@@ -1728,8 +1731,8 @@ end
 
 function XMLParser:getItemClass(content, curLine, getStrObject)
     parserLOG(":::: global method XMLParser:getItemClass ::::")
-    local findObjectPattern = '%s*<([^>%s%/]+)>?[/%s]?'
-    local findParamPattern = '%s+([^<]*)%s*=+%s*"([^"]*)"'
+    local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
+    local findParamPattern = '%s+([^<\t]*)%s*=+%s*"([^"]*)"'
 
     local getItemClass = "item"
     local lineForScan = curLine
@@ -2673,7 +2676,7 @@ function XMLParser:Tree(treeParams)
         end
 
         if TREE["content"] then
-            --local findObjectPattern = '%s*<([^>%s%/]+)>?[/%s]?'
+            --local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
             local findParamPattern = '%s+'..paramKey..'%s*=+%s*"([^"]*)"'
 
             local paramLine = TREE["firstLine"]
@@ -3222,6 +3225,16 @@ function XMLParser:Tree(treeParams)
     end
 
 
+    -- TREE["trigger"] = {
+        
+    -- }
+
+    -- function TREE:trigger.add()
+    --     println("kok")
+    -- end
+    
+
+
 
     --class object
     function TREE:GetObj(tableObjectTagXorCustomKey)
@@ -3395,7 +3408,7 @@ function XMLParser:Tree(treeParams)
             end
     
             if TREE["content"] then
-                --local findObjectPattern = '%s*<([^>%s%/]+)>?[/%s]?'
+                --local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
                 local findParamPattern = '%s+'..paramKey..'%s*=+%s*"([^"]*)"'
     
                 local paramLine = OBJ["_object"]["_itemLine"]
