@@ -163,6 +163,29 @@ Class XMLParser
 
 
     /* Более полезные функции - пользуйтесь */
+    Class TRIGGER
+    {
+        [M] TRIGGER trigger( string TriggerName ) : public XMLParser     /* Это прямое обращение к триггеру TRIGGER. Используйте [XMLParser:init()] перед выполнением команд */
+        {
+            [M] bool DoScript()     /* Безопасно выполняет скрипт триггера. Возвращает вторым значением ошибку в противном случае. Глобальные игровые методы trigger недоступны - пожалуйста, откажитесь от методов или переопределяйте trigger внутри скрипта триггера, чтобы DoScript() выполнился корректно. В противном случае в скрипте триггера есть ошибка */
+            [M] bool IsActive()      /* Возвращает состояние триггера */
+            [M] bool SetActive( bool Active )     /* Назначает состояние триггера */
+            [M] string GetBody()     /* Возвращает скрипт триггера как строку */
+            [M] table GetScript()    /* Возвращает скрипт триггера как таблицу построчно */
+            [M] string GetScriptByLine( int Line )            /* Возвращает строку скрипта триггера по номеру строки (относительно) */
+            [M] int GetLineByScriptContent( string Content )  /* Возвращает номер строки скрипта триггера по содержимому строки (относительно) */
+            [M] bool ReplaceScript( string NewScript )        /* Заменяет скрипт триггера новым скриптом */
+            [M] bool AddScript( string Script, int Line )     /* Добавляет новую часть скрипта в триггер с позицией Line, иначе в конец триггера */
+            [M] void RemoveScript()     /* Удаляет скрипт триггера */
+            [M] bool RemoveScriptLine( int Line or string Content )     /* Удаляет строку скрипта триггера по номеру строки или по содержимому (относительно) */
+            [M] table GetAllEvents()    /* Возвращает все ивенты триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+            [M] event[table] GetEventById( const char* EventId )                        /* Возвращает ивент триггера по имени eventid. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+            [M] event[table] GetEventByKey( const char* EventKey, string EventValue )   /* Возвращает ивент триггера по ключу ивента и его значению. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+            [M] bool AddEvent( table event )        /* Добавляет новый ивент в триггер. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+            [M] bool RemoveEvent( table event )     /* Удаляет ивент из триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+        }
+    }
+
     Class TREE 
     {
         [M] TREE Tree( table treeParams ) : public XMLParser     /* Это прямое обращение к дереву TREE. Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команд. Во время использования команд аргумент в Tree() не нужен */
