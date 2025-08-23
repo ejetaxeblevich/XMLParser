@@ -235,6 +235,29 @@
 -- 
 -- 
 --     /* Более полезные функции - пользуйтесь */
+--     Class TRIGGER
+--     {
+--         [M] TRIGGER trigger( string TriggerName ) : public XMLParser     /* Это прямое обращение к триггеру TRIGGER. Используйте [XMLParser:init()] перед выполнением команд */
+--         {
+--             [M] bool DoScript()     /* Безопасно выполняет скрипт триггера. Возвращает вторым значением ошибку в противном случае. Глобальные игровые методы trigger недоступны - пожалуйста, откажитесь от методов или переопределяйте trigger внутри скрипта триггера, чтобы DoScript() выполнился корректно. В противном случае в скрипте триггера есть ошибка */
+--             [M] bool IsActive()      /* Возвращает состояние триггера */
+--             [M] bool SetActive( bool Active )     /* Назначает состояние триггера */
+--             [M] string GetBody()     /* Возвращает скрипт триггера как строку */
+--             [M] table GetScript()    /* Возвращает скрипт триггера как таблицу построчно */
+--             [M] string GetScriptByLine( int Line )            /* Возвращает строку скрипта триггера по номеру строки (относительно) */
+--             [M] int GetLineByScriptContent( string Content )  /* Возвращает номер строки скрипта триггера по содержимому строки (относительно) */
+--             [M] bool ReplaceScript( string NewScript )        /* Заменяет скрипт триггера новым скриптом */
+--             [M] bool AddScript( string Script, int Line )     /* Добавляет новую часть скрипта в триггер с позицией Line, иначе в конец триггера */
+--             [M] void RemoveScript()     /* Удаляет скрипт триггера */
+--             [M] bool RemoveScriptLine( int Line or string Content )     /* Удаляет строку скрипта триггера по номеру строки или по содержимому (относительно) */
+--             [M] table GetAllEvents()    /* Возвращает все ивенты триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--             [M] event[table] GetEventById( const char* EventId )                        /* Возвращает ивент триггера по имени eventid. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--             [M] event[table] GetEventByKey( const char* EventKey, string EventValue )   /* Возвращает ивент триггера по ключу ивента и его значению. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--             [M] bool AddEvent( table event )        /* Добавляет новый ивент в триггер. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--             [M] bool RemoveEvent( table event )     /* Удаляет ивент из триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--         }
+--     }
+--
 --     Class TREE 
 --     {
 --         [M] TREE Tree( table treeParams ) : public XMLParser     /* Это прямое обращение к дереву TREE. Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команд. Во время использования команд аргумент в Tree() не нужен */
@@ -2320,6 +2343,396 @@ end
 
 
 -- ////////////////////// GLOBAL MODULE METHODS //////////////////////////////
+
+
+
+--class trigger
+--XMLParser:init("data\\maps\\0r5m3\\triggers.xml", "triggers", nil, false)
+--local stringTriggerName = "test"
+function XMLParser:trigger(stringTriggerName)
+    parserLOG(":::: global method XMLParser:trigger ::::")
+    --XMLParser:Tree():tryUpdate()
+
+    local triggerBody = ""
+    local triggerActive = false
+    local triggerEvents = {}
+
+    local event_properties = {"eventid","timeout","ObjName","msgid","flypath"}
+
+    local root = XMLParser:Tree({"triggers"}):init()
+    local file = XMLParser:Tree().content
+    local trigger_exists, triggerItem = XMLParser:Tree():IsTreeExists({"trigger", tostring(stringTriggerName)})
+    
+    local _itemLine = tonumber(triggerItem._itemLine) or 1
+    if trigger_exists then
+        local active = triggerItem["_itemProperties"].active
+        if active=="1" then
+            triggerActive = true
+        end
+
+        if file and _itemLine then
+            if file[_itemLine] then
+                local inScript = false
+                while file[_itemLine] do
+                    if not inScript then
+                        if string.find(file[_itemLine], "<event[^>]*/>") then
+                            --LOG("{"..file[_itemLine].."}")
+                            local event = {}
+                            for i, key in ipairs(event_properties) do
+                                local _,_, property = string.find(file[_itemLine], key..'%s*=%s*"([^"]*)"')
+                                --LOG(key.." "..tostring(property))
+                                if property then event[key] = property end
+                            end
+                            table.insert(triggerEvents, event)
+                        end
+                    else
+                        local retVal = ""
+                        if not string.find(file[_itemLine], "</?script>") and not string.find(file[_itemLine], "</?trigger>") then
+                            retVal = file[_itemLine]
+                            --triggerBody = triggerBody.."\n"..retVal
+                            triggerBody = triggerBody..retVal.."; "
+                        end
+                    end
+                    if string.find(file[_itemLine], "<script>") then
+                        inScript = true
+                    end
+                    if string.find(file[_itemLine], "</trigger>") then
+                        break
+                    end
+
+                    _itemLine = _itemLine + 1
+                end
+            end
+        end
+
+        local parse_triggerScript = function(triggerBody)
+            local triggerScript = {}
+            triggerBody = triggerBody.."\n"
+            local startLine, endLine = 1, 1
+            for i = 1, string.len(triggerBody) do
+                startLine, endLine = startLine, i
+                if string.sub(triggerBody, i, i) == "\n" then
+                    local line = string.sub(triggerBody, startLine, endLine)
+                    line = string.gsub(line, "\n", "")
+                    table.insert(triggerScript, line)
+                    startLine = i
+                end
+            end
+            return triggerScript
+        end
+
+        local get_script = function()
+            local triggerBody = string.gsub(triggerBody, "; ", "\n")
+            return parse_triggerScript(triggerBody)
+        end
+
+        local read_triggers_file = function()
+            local path = EX_XMLParserPATH
+            local file = io.open(path, "r+")
+            local content = {}
+            if file then
+                local i = 1
+                for line in file:lines() do
+                    content[i] = line
+                    i=i+1
+                end
+                file:close()
+                file = nil
+                return content
+            end
+            return nil
+        end
+
+        local delete_triggerScript = function()
+            local content = file or read_triggers_file()
+            if content then
+                local i = _itemLine
+                while content[i] do
+                    if string.find(content[i], "</script>") then
+                        i=i-1
+                        while content[i] do
+                            if string.find(content[i], "<script>") then
+                                while string.find(content[i], "</script>")==nil do
+                                    i=i+1
+                                end
+                                break
+                            end
+                            table.remove(content, i)
+                            i=i-1
+                        end
+                    end
+                    if string.find(content[i], "<script>") then
+                        break
+                    end
+                    i=i-1
+                end
+                return content, i
+            end
+            return nil
+        end
+
+        local write_triggerScript = function(content, iline, triggerScript)
+            local content = content or file or read_triggers_file()
+            if content then
+                local i = iline or _itemLine
+                while content[i] do
+                    if string.find(content[i], "<script>") then
+                        i=i+1
+                        for j, line in ipairs(triggerScript) do
+                            table.insert(content, i, line)
+                            i=i+1
+                        end
+                        return content
+                    end
+                    i=i-1
+                end
+            end
+            return nil
+        end
+
+        local write_triggers_file = function(content)
+            local content = content or file or read_triggers_file()
+            local path = EX_XMLParserPATH
+            local file = io.open(path, "w")
+            if file then
+                local i = 1
+                while content[i] do
+                    file:write(content[i].."\n")
+                    i=i+1
+                end
+                file:flush()
+                file:close()
+                return true
+            end
+            return nil
+        end
+
+
+        local TRIGGER = {
+            IsActive = function()
+                return triggerActive
+            end,
+            SetActive = function(_, boolActive)
+                local do_it = false
+                local content = file or read_triggers_file()
+                local i = _itemLine
+                while content[i] do
+                    if string.find(content[i], "<trigger") and string.find(content[i], 'Name="'..stringTriggerName..'"') then
+                        if boolActive then
+                            content[i] = string.gsub(content[i], 'active="[^"]"', 'active="1"')
+                        else
+                            content[i] = string.gsub(content[i], 'active="[^"]"', 'active="0"')
+                        end
+                        do_it = true
+                        break
+                    end
+                    i=i-1
+                    if string.find(content[i], "</trigger>") then
+                        break
+                    end
+                end
+                write_triggers_file(content)
+                return do_it
+            end,
+            GetBody = function()
+                triggerBody = string.gsub(triggerBody, "; ", "\n")
+                return triggerBody
+            end,
+            DoScript = function() 
+                local call_code = function()
+                    triggerBody = string.gsub(triggerBody, ";", "\n")
+                    triggerBody = string.gsub(triggerBody, "\t", " ")
+                    triggerBody = string.gsub(triggerBody, "trigger:[^%)]*%)", "") --trigger global methods = nil value, please specify the reference to the trigger as an object [local trig = getObj("trigger_name")] in the trigger body.
+                    local str = "local f = function() "..triggerBody.." end; return f"
+                    local f = dostring(str)
+                    if f then 
+                        f()
+                        return true 
+                    end 
+                    return false
+                end
+                local success, err = pcall(call_code)
+                return success, err
+            end,
+
+            GetAllEvents = function()
+                return triggerEvents
+            end,
+            GetEventById = function(_, EventId)
+                for i, event in ipairs(triggerEvents) do
+                    local eventid = event.eventid
+                    if EventId and eventid then
+                        if EventId==eventid then
+                            return event
+                        end
+                    end
+                end
+                return nil
+            end,
+            GetEventByKey = function(_, EventKey, EventValue)
+                for i, event in ipairs(triggerEvents) do
+                    local eventKey = event[EventKey]
+                    if eventKey then
+                        if EventValue then
+                            if EventValue==eventKey then
+                                return event
+                            end
+                        else
+                            return event
+                        end
+                    end
+                end
+                return nil
+            end,
+            RemoveEvent = function(_, event)
+                local do_it = false
+                local eventid = event.eventid
+                local content = file or read_triggers_file()
+                local i = _itemLine
+                while content[i] do
+                    if string.find(content[i], "<trigger") then
+                        break
+                    end
+                    if string.find(content[i], "<event") then
+                        if string.find(content[i], 'eventid%s*=%s*"'..eventid..'"') then
+                            for j, key in ipairs(event_properties) do
+                                if key~="eventid" then
+                                    local _,_, property = string.find(content[i], key..'%s*=%s*"([^"]*)"')
+                                    if event[key] and property then
+                                        if event[key]==property then
+                                            table.remove(content, i)
+                                            do_it = true
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    i=i-1
+                end
+                write_triggers_file(content)
+                return do_it
+            end,
+            AddEvent = function(_, event)
+                local do_it = false
+                local content = file or read_triggers_file()
+                local i = _itemLine
+                while content[i] do
+                    if string.find(content[i], "<event") or string.find(content[i], "<trigger") then
+                        local _,_, tabs = string.find(content[i], "(\t*)")
+                        if not tabs then tabs = "" end
+                        i=i+1
+                        local eventt = tabs..'<event '
+                        for key, value in pairs(event) do
+                            eventt = eventt..key..'="'..value..'" '
+                        end
+                        eventt = eventt..'/>'
+                        table.insert(content, i, eventt)
+                        do_it = true
+                        break
+                    end
+                    i=i-1
+                end
+                write_triggers_file(content)
+                return do_it
+            end,
+
+            GetScript = function()
+                local triggerScript = get_script()
+                --LOG("GetScript\n"..tostring(_TableToString(triggerScript)))
+                return triggerScript
+            end,
+            GetScriptByLine = function(_, intLine)
+                local triggerScript = get_script()
+                return triggerScript[intLine]
+            end,
+            GetLineByScriptContent = function(_, stringContent)
+                local triggerScript = get_script()
+                for i, line in ipairs(triggerScript) do
+                    if string.find(line, stringContent) then
+                        return i
+                    end
+                end
+                return nil
+            end,
+            ReplaceScript = function(_, stringNewScript)
+                local do_it = false
+                local stringNewScript = parse_triggerScript(stringNewScript)
+                local content
+                if stringNewScript[1] then
+                    content, i = delete_triggerScript()
+                    content = write_triggerScript(content, i, stringNewScript)
+                    do_it = true
+                end
+                
+                write_triggers_file(content)
+                return do_it
+            end,
+            RemoveScript = function()
+                delete_triggerScript()
+                write_triggers_file(content)
+            end,
+            RemoveScriptLine = function(_, intLineORstringContent)
+                local do_it = false
+                local triggerScript = get_script()
+                if type(intLineORstringContent)=="number" then
+                    if table.remove(triggerScript, intLineORstringContent) then
+                        local content, i = delete_triggerScript()
+                        content = write_triggerScript(content, i, triggerScript)
+                        
+                        return write_triggers_file(content)
+                    end
+                elseif type(intLineORstringContent)=="string" then
+                    for i, line in ipairs(triggerScript) do
+                        if string.find(line, intLineORstringContent) then
+                            if table.remove(triggerScript, i) then
+                                local content, i = delete_triggerScript()
+                                content = write_triggerScript(content, i, triggerScript)
+                                
+                                return write_triggers_file(content)
+                            end
+                        end
+                    end
+                end
+                return nil
+            end,
+            AddScript = function(_, stringScript, intLine)
+                local call_code = function()
+                    local triggerScript = get_script()
+                    local intLine = intLine or getn(triggerScript) + 1
+
+                    local additional_triggerScript = string.gsub(stringScript, "; ", "\n")
+                    additional_triggerScript = parse_triggerScript(additional_triggerScript)
+
+                    local _,_, tabs = string.find(tostring(triggerScript[intLine]), "(\t*)")
+                    for i, newLine in ipairs(additional_triggerScript) do
+                        if tabs then
+                            newLine = tabs..newLine
+                        end
+                        table.insert(triggerScript, intLine, newLine)
+                        intLine=intLine+1
+                    end
+                    table.remove(triggerScript) --kek
+
+                    local content, i = delete_triggerScript()
+                    content = write_triggerScript(content, i, triggerScript)
+                    --LOG("AddScript\n"..tostring(_TableToString(triggerScript)))
+                    
+                    return write_triggers_file(content)
+                end
+                local success, err = pcall(call_code)
+                return success, err
+            end
+        }
+
+        return TRIGGER
+    end
+
+    parserLOG("[E] Module XMLParser.lua === Can't find trigger '"..tostring(stringTriggerName).."' in file")
+    parserPRINT("Can't find trigger '"..tostring(stringTriggerName).."' in file")
+    return nil
+end
 
 
 
