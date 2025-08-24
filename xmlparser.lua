@@ -239,7 +239,7 @@
 --     {
 --         [M] TRIGGER trigger( string TriggerName ) : public XMLParser     /* Это прямое обращение к триггеру TRIGGER. Используйте [XMLParser:init()] перед выполнением команд */
 --         {
---             [M] bool DoScript()     /* Безопасно выполняет скрипт триггера. Возвращает вторым значением ошибку в противном случае. Глобальные игровые методы trigger недоступны - пожалуйста, откажитесь от методов или переопределяйте trigger внутри скрипта триггера, чтобы DoScript() выполнился корректно. В противном случае в скрипте триггера есть ошибка. Помните, что манипулирование объектами на других картах извне невозможно */
+--             [M] bool DoScript()      /* Безопасно выполняет скрипт триггера. Возвращает вторым значением ошибку в противном случае. Глобальные игровые методы trigger недоступны - пожалуйста, откажитесь от методов или переопределяйте trigger внутри скрипта триггера, чтобы DoScript() выполнился корректно. В противном случае в скрипте триггера есть ошибка. Помните, что манипулирование объектами на других картах извне невозможно */
 --             [M] bool IsActive()      /* Возвращает состояние триггера */
 --             [M] bool SetActive( bool Active )     /* Назначает состояние триггера */
 --             [M] string GetBody()     /* Возвращает скрипт триггера как строку */
@@ -295,6 +295,7 @@
 --             [M] bool UnwrapAllItems()     /* Разворачивает все items дерева */
 --             [M] bool AddEnters()          /* Добавляет отступы между элементами, если нет */
 --             [M] bool CleanEnters()        /* Убирает отступы между элементами, если есть */
+--             [M] string ReadAsTextField( bool CutTabs )       /* Возвращает содержимое между тегами дерева. Удаляет табуляцию в возвращаемом значении, если CutTabs = true */
 -- 
 --
 --             Class OBJ
@@ -481,16 +482,26 @@ EX_ModStats_Achi = {
 
 local function parserLOG(...)
     if EX_XMLParserLOG then
+        local logstr = ""
         for i, v in ipairs(arg) do
-            LOG("[XMLParserLOG]: "..tostring(v))
+            logstr = logstr..tostring(v)
+            if arg[i+1] then
+                logstr = logstr.."\t"
+            end
         end
+        LOG("[XMLParserLOG]: "..logstr)
     end
 end
 local function parserPRINT(...)
     if EX_XMLParserLOG then
+        local printstr = ""
         for i, v in ipairs(arg) do
-            println("[XMLParserPRINT]: "..tostring(v))
+            printstr = printstr..tostring(v)
+            if arg[i+1] then
+                printstr = printstr.."\t"
+            end
         end
+        println("[XMLParserPRINT]: "..printstr)
     end
 end
 
@@ -853,12 +864,22 @@ local function CheckXMLParserFileForTree(treeParams, bNotReturnContent)
 
     local tree_name
     local tree_objName
+    --local tree_key
     if type(treeParams)~="table" then
         tree_name = treeParams or EX_XMLParserROOT
         tree_objName = nil
     else
         tree_name = treeParams["_itemTag"] or EX_XMLParserROOT
         tree_objName = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or nil
+        -- local tree_key_func = function() 
+        --     if treeParams["Name"] then return "Name" end
+        --     if treeParams["name"] then return "name" end
+        --     if treeParams["ObjectId"] then return "ObjectId" end
+        --     if treeParams["Id"] then return "Id" end
+        --     if treeParams["id"] then return "id" end
+        --     if treeParams["_customValue"] then return "_customValue" end
+        -- end
+        -- tree_key = tree_key_func()
     end
 
     local path_to_file = EX_XMLParserPATH
@@ -902,7 +923,9 @@ local function CheckXMLParserFileForTree(treeParams, bNotReturnContent)
 
     if (tree_objName) and (tree_objName~="") then
         parserLOG("\\\\ "..tree_objName)
-        local gdeStart, gdeEnd, fnd_tree_objName = string.find(fast_content, "<"..tree_name..'[^>]*%s+Name%s*=+%s*"'..tree_objName..'"')
+        --local gdeStart, gdeEnd, fnd_tree_objName = string.find(fast_content, "<"..tree_name..'[^>]*'..tostring(tree_key)..'%s*=%s*"'..tree_objName..'"')
+        local gdeStart, gdeEnd = string.find(fast_content, '<'..tree_name..'[^<]*=%s*"'..tree_objName..'"[^>]*>')
+        parserLOG(gdeStart, gdeEnd, tree_name, tree_objName)
         if gdeStart then
             local ankerTree = string.sub(fast_content, gdeStart, gdeEnd)
             parserLOG("{"..ankerTree.."}")
@@ -1556,6 +1579,8 @@ function XMLParser:getTree(treeParams, put_in)
             treeData[2][item]["_itemParent"] = treeName
             treeData[2][item]["_itemProperties"] = {}
             parserLOG("+ Item: "..treeData[2][item]["_itemTag"])
+
+            local scanChilds = true
             
             local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
             if getStrParam and getStrValue then
@@ -1570,6 +1595,9 @@ function XMLParser:getTree(treeParams, put_in)
                     end
                 end
                 curLine=curLine+1
+                if string.find(content[curLine], "[^%s+]+</"..getStrObject..">") and not string.find(content[curLine], findObjectPattern.."%s*</"..getStrObject..">") then
+                    scanChilds = false
+                end
             else
                 repeat
                     curLine=curLine+1
@@ -1580,7 +1608,11 @@ function XMLParser:getTree(treeParams, put_in)
                         treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
                     end
                 until string.find(content[curLine-1], ">")
+                if string.find(content[curLine-1], "[^<]*</"..getStrObject..">") then
+                    scanChilds = false
+                end
             end
+
 
             if not content[curLine] then
                 break
@@ -1589,11 +1621,11 @@ function XMLParser:getTree(treeParams, put_in)
             --childs
             if getItemClass=="object" then
                 parserLOG("========================= skipGetChilds")
-            else
+            elseif scanChilds then
                 local child = 1
                 treeData[3][item]["_itemChilds"] = {}
                 repeat
-                    if not (content[curLine] == itemTabs.."</"..getStrObject..">") then
+                    if not (content[curLine] == itemTabs.."</"..getStrObject..">") and not string.find(content[curLine-1], "[^%s+]+</"..getStrObject..">") then
                         curLine=curLine+1
                     end
                     
@@ -1625,13 +1657,13 @@ function XMLParser:getTree(treeParams, put_in)
                             curLine=curLine+1
                         end
                         break
-                    else
-                        local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
-                        if getStrParam and getStrValue then
-                            parserLOG("\t| {"..getStrParam.."} {"..getStrValue.."}")
+                    -- else
+                    --     local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+                    --     if getStrParam and getStrValue then
+                    --         parserLOG("\t| {"..getStrParam.."} {"..getStrValue.."}")
 
-                            treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
-                        end
+                    --         treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
+                    --     end
                     end
                 until (content[curLine] == itemTabs.."</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">")
             end
@@ -1644,7 +1676,7 @@ function XMLParser:getTree(treeParams, put_in)
         if not content[curLine+1] then
             break
         end
-        if content[curLine] == startTabs.."</"..treeName..">" then
+        if content[curLine] == startTabs.."</"..treeName..">" or string.find(content[curLine], "[^%s+]+</"..treeName..">") then
             break
         end
         if not string.find(content[curLine], startTabs.."\t"..findObjectPattern) and (content[curLine] ~= startTabs.."</"..treeName..">") then
@@ -1734,6 +1766,11 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
         item["_itemChilds"] = {}
         local child = 1
         while string.find(content[curLine], startTabs.."</"..item["_itemTag"]..">")==nil and string.find(content[curLine], parentTabs.."</"..parentName..">")==nil do
+            if content[curLine-1] then
+                if string.find(content[curLine-1], "[^%s+]*</"..item["_itemTag"]..">") then
+                    break
+                end
+            end
             if string.find(content[curLine], findObjectPattern) then
                 local curLine_
                 item["_itemChilds"][child], curLine_ = XMLParser:getItemFromLine(content, curLine, item["_itemTag"], startTabs)
@@ -3122,6 +3159,56 @@ function XMLParser:Tree(treeParams)
         return nil
     end
 
+    function TREE:ReadAsTextField(boolCutTabs)
+        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:ReadAsTextField ::::")
+        TREE:tryUpdate()
+        local treeBody = ""
+
+        local file = TREE["content"]
+        local _itemLine = tonumber(TREE["firstLine"]) or 1
+        if file and _itemLine then
+            if file[_itemLine] then
+                local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                if not tabs then tabs = "" end
+                while file[_itemLine] do
+                    local _,_, shapkaContent = string.find(file[_itemLine], tabs.."<"..tostring(TREE["treeName"]).."[^>]*>%s*([^<]*)%s*[</"..tostring(TREE["treeName"])..">]?")
+                    if shapkaContent then
+                        treeBody = treeBody..shapkaContent
+                        if string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
+                            break
+                        end
+                        _itemLine = _itemLine + 1
+                    end
+                    if string.find(file[_itemLine], tabs.."</"..tostring(TREE["treeName"])..">") then
+                        break
+                    end
+                    if string.find(treeBody, "%w+") then
+                        treeBody = treeBody.."\n"
+                    end
+
+                    local textContent = string.gsub(file[_itemLine], "</"..tostring(TREE["treeName"])..">", "")
+                    treeBody = treeBody..textContent
+
+                    if string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
+                        break
+                    end
+
+                    _itemLine = _itemLine + 1
+                end
+            end
+        end
+
+        treeBody = string.gsub(treeBody, "<"..tostring(TREE["treeName"]).."[^>]*>", "")
+
+        if boolCutTabs then
+            treeBody = string.gsub(treeBody, "\t", "")
+        end
+
+        parserLOG("return {"..treeBody.."}")
+
+        return treeBody
+    end
+
     function TREE:GetName()
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:GetName ::::")
         TREE:tryUpdate()
@@ -3194,7 +3281,7 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="tree") then
-                    if TREE["treeData"][2][i]["_itemProperties"]["Name"]==stringTreeObjName then
+                    if (TREE["treeData"][2][i]["_itemProperties"]["Name"]==stringTreeObjName) or (TREE["treeData"][2][i]["_itemProperties"]["name"]==stringTreeObjName) then
                         return TREE["treeData"][2][i]
                     end
                 end
@@ -3295,7 +3382,7 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="object") and (TREE["treeData"][2][i]["_itemProperties"]) then
-                    if TREE["treeData"][2][i]["_itemProperties"]["Name"]==stringItemObjName then
+                    if (TREE["treeData"][2][i]["_itemProperties"]["Name"]==stringItemObjName) or (TREE["treeData"][2][i]["_itemProperties"]["name"]==stringItemObjName) then
                         return TREE["treeData"][2][i]
                     end
                 end
@@ -3637,15 +3724,6 @@ function XMLParser:Tree(treeParams)
         return nil
     end
 
-
-    -- TREE["trigger"] = {
-        
-    -- }
-
-    -- function TREE:trigger.add()
-    --     println("kok")
-    -- end
-    
 
 
 
