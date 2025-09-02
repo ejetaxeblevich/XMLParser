@@ -1226,13 +1226,18 @@ end
 function XMLParser:createFile(path, default_file_content)
     parserLOG(":::: global method XMLParser:createFile ::::")
     local path = path or EX_XMLParserPATH
-    local file = io.open(path, "w")
-    local default_file_content = default_file_content or EX_DefaultXMLParserFileContent
-    if default_file_content then EX_DefaultXMLParserFileContent = default_file_content end
-    file:write(EX_DefaultXMLParserFileContent)
+    local file = io.open(path, "r")
+    if not file then
+        file = io.open(path, "w")
+        local default_file_content = default_file_content or EX_DefaultXMLParserFileContent
+        if default_file_content then EX_DefaultXMLParserFileContent = default_file_content end
+        file:write(EX_DefaultXMLParserFileContent)
+        file:close()
+        file = nil
+        return true
+    end
     file:close()
-    file = nil
-    return true
+    return false
 end
 
 --g_XMLParser:removeFile()
