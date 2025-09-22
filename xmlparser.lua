@@ -7,7 +7,7 @@
 --          написанный специально для игры Ex Machina 
 --              (жопой для жопы руками из жопы)
 --
---                      XMLParser 1.0
+--                      XMLParser v1.0
 -- 
 -- 
 -- ===================== Автор E Jet ==========================
@@ -428,7 +428,7 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "1.0"
+XMLParser.version = "v1.0"
 
 LOG("[I] Init Module XMLParser.lua "..XMLParser.version)
 
@@ -482,26 +482,26 @@ EX_ModStats_Achi = {
 
 local function parserLOG(...)
     if EX_XMLParserLOG then
-        local logstr = ""
+        local logstr = {}
         for i, v in ipairs(arg) do
-            logstr = logstr..tostring(v)
             if arg[i+1] then
-                logstr = logstr.."\t"
+                v = tostring(v).."\t"
             end
+            table.insert(logstr, tostring(v))
         end
-        LOG("[XMLParserLOG]: "..logstr)
+        LOG("[XMLParserLOG]: "..table.concat(logstr))
     end
 end
 local function parserPRINT(...)
     if EX_XMLParserLOG then
-        local printstr = ""
+        local printstr = {}
         for i, v in ipairs(arg) do
-            printstr = printstr..tostring(v)
             if arg[i+1] then
-                printstr = printstr.."\t"
+                v = tostring(v).."\t"
             end
+            table.insert(printstr, tostring(v))
         end
-        println("[XMLParserPRINT]: "..printstr)
+        println("[XMLParserPRINT]: "..table.concat(printstr))
     end
 end
 
@@ -1067,9 +1067,9 @@ end
 local function _GetExeGamePath()
     parserLOG(":::: local function _GetExeGamePath() ::::")
 	local ExeGamePath = "С:/"
-	local LOG = io.open("exmachina.log","r+")
-	if LOG then
-		for logLine in LOG:lines() do
+	local exmachinaLOG = io.open("exmachina.log","r+")
+	if exmachinaLOG then
+		for logLine in exmachinaLOG:lines() do
 			local ExeGamePathfnd = string.find(logLine, 'Path: ')
 			if ExeGamePathfnd then
 				local strlen = string.len(logLine)
@@ -1077,7 +1077,7 @@ local function _GetExeGamePath()
 				break
 			end
 		end
-		LOG:close()
+		exmachinaLOG:close()
 	end
 
 	ExeGamePath = string.gsub(ExeGamePath, "\\", "\\\\")
@@ -1198,17 +1198,17 @@ function XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bL
     local default_file_content = default_file_content or EX_DefaultXMLParserFileContent
     local root_tag_in_file = root_tag_in_file or EX_XMLParserROOT
 
+    if bLog then
+        EX_XMLParserLOG = true
+    else
+        EX_XMLParserLOG = false
+    end
+
     local exists, file = GetRootTagInFile(path_to_file, root_tag_in_file)
     if not exists then
         LOG("[E] Module XMLParser.lua === File '"..tostring(path_to_file).."' without root tag <"..tostring(root_tag_in_file)..">")
         println("File '"..tostring(path_to_file).."' without root tag <"..tostring(root_tag_in_file)..">")
         return nil
-    end
-
-    if bLog then
-        EX_XMLParserLOG = true
-    else
-        EX_XMLParserLOG = false
     end
 
     EX_XMLParserPATH = path_to_file
@@ -1246,6 +1246,8 @@ function XMLParser:removeFile()
     local path = _GetExeGamePath()..EX_XMLParserPATH
     local file = io.open(path, "r")
     if file then
+        file:close()
+        file = nil
         os.remove(path)
         return true
     end
@@ -1627,21 +1629,27 @@ function XMLParser:getTree(treeParams, put_in)
             if getItemClass=="object" then
                 parserLOG("========================= skipGetChilds")
             elseif scanChilds then
+                parserLOG("========================= tryGetChilds")
                 local child = 1
                 treeData[3][item]["_itemChilds"] = {}
                 repeat
                     if not (content[curLine] == itemTabs.."</"..getStrObject..">") and not string.find(content[curLine-1], "[^%s+]+</"..getStrObject..">") then
-                        curLine=curLine+1
+                        --parserLOG("skip "..content[curLine])
+                        if not string.find(content[curLine], itemTabs..""..findObjectPattern) then
+                            curLine=curLine+1
+                        end
                     end
                     
                     if not content[curLine] then
                         break
                     end
                     if (content[curLine] == itemTabs.."</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">") then
+                        --parserLOG("breakkkk "..content[curLine])
                         break
                     end
                     local _, _, ifAgainTree = string.find(content[curLine], itemTabs..""..findObjectPattern)
                     if ifAgainTree then
+                        --parserLOG("hook first child "..content[curLine])
                         while (content[curLine] ~= itemTabs.."</"..getStrObject..">") do
                             if not content[curLine] then break end
                             local _, _, ifAgainTree_ = string.find(content[curLine], itemTabs..""..findObjectPattern)
