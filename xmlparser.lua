@@ -3435,6 +3435,19 @@ function XMLParser:Tree(treeParams)
     function TREE:GetChilds()
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:GetChilds ::::")
         TREE:tryUpdate()
+        local childs_exists = function()
+                for i, _ in ipairs(TREE["treeData"][3]) do
+                    if TREE["treeData"][3][i] then
+                        if TREE["treeData"][3][i]["_itemChilds"] then
+                            return true
+                        end
+                    end
+                end
+                return false
+            end
+        if not childs_exists() then
+            return nil
+        end
         return TREE["treeData"][3]
     end
     -- function TREE:GetParentName()
