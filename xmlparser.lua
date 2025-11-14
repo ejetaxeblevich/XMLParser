@@ -2100,6 +2100,9 @@ function XMLParser:SetItemValueInFile(stringFindExample, stringItemTagName, stri
     local item, content = XMLParser:GetItemFromFile(stringFindExample, stringItemTagName, stringItemRepositoryName)
     local itemLine = tonumber(item._itemLine)
     if itemLine then
+        if 1>=itemLine then
+            return do_it
+        end
         local valueLine = itemLine
         --листаем вниз
         repeat
