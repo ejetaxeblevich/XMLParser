@@ -861,6 +861,7 @@ local function CollectContentTable(new_content)
 end
 
 
+
 local function WriteXMLParserFileForTable(content)
     parserLOG(":::: local function WriteXMLParserFileForTable ::::")
     if (not content) or (not type(content)=="table") then 
@@ -869,11 +870,10 @@ local function WriteXMLParserFileForTable(content)
     local path_to_file = EX_XMLParserPATH
 
     local file = EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR
-    if not is_file_open(file) then
-        pcall(function() return file:close() end)
-        file = io.open(path_to_file, "w")
-        EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = file
-    end
+    pcall(function() return file:close() end)
+
+    file = io.open(path_to_file, "w")
+    EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = file
 
     if not file then
         EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = nil
@@ -1261,14 +1261,14 @@ local function _INTERPRETATION(Value)
             return Value
         end,
         AsInt = function()
-            if not Value then Value = -1.0 end
-            local v = math.floor(tonumber(Value))
+            if not Value then Value = 0 end
+            local v = math.floor(tonumber(Value) or 0)
             if v then return v end
             return Value
         end,
         AsFloat = function()
-            if not Value then Value = -1.0 end
-            local v = tonumber(Value)
+            if not Value then Value = 0 end
+            local v = tonumber(Value) or 0
             if v then return v end
             return Value
         end,
