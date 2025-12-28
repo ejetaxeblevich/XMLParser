@@ -145,8 +145,8 @@
 --
 --
 --      НАСТОЯТЕЛЬНО РЕКОМЕНДУЕТСЯ перед работой ознакомиться 
--- с памятками ниже [Что такое "дерево"] и [Что такое "объект"]
--- в понимании этого lua-модуля.
+-- с памятками ниже [Что такое "дерево"], [Что такое "объект"] и
+-- [Что такое "поле текста"] в понимании этого lua-модуля.
 --      В противном случае гарантия правильной работы говно- 
 -- парсера аннулируется.
 --
@@ -252,18 +252,19 @@
 --         [M] tuple getTree( const table* treeParams, const char* put_in )    /* Возвращает все найденные параметры, items и все childs дерева, сложенного в put_in, иначе найдет первое вхождение или nil */
 --         [M] table getItemFromLine( const table* content, const int* Line, const CStr& parentName, const char* parentTabs )       /* Возвращает найденный item из content, все его параметры и все вложенные дочерние item и их параметры, начиная с номера строки Line. Ищет закрывающий тег parentName вместе с parentTabs. Громоздкая и рекурсивная функция, дающая памяти игры утечь куда глаза глядят, если xml конструкция достаточно сложная */
 --         [M] string getItemClass( const table* content, const int* curLine )     /* Проверяет item из content, под номером строки curLine и возвращает его класс: "tree", "object" */
---         [M] table GetTagAndCustomKeyFromItem( const table* itemParams )         /* Возвращает имя тега и пользовательский параметр item. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
+--         [M] table GetTagAndCustomKeyFromItem( const table* itemParams )         /* Возвращает имя тега и пользовательский параметр item. Пользовательские ключи задаются в PARSER.KEYS */
+--         [M] string GetItemCustomKey( const table* itemParams, const table* keys )    /* Возвращает ключ объекта и его значение. Берет table keys из PARSER.KEYS_ForSearching если nil. */
 --     
---     
+--
 --         /* Чтение и редактирование XML */
 --         Class TREE
 --         {
 --             [M] TREE Tree( table treeParams ) : public XMLParser     /* Это прямое обращение к дереву TREE. Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команд. Во время использования команд аргумент в Tree() не нужен */
 --             {
 --                 [M] bool init()      /* Обновляет содержимое TREE, перечитывает xml файл */
---                 [M] bool IsObjectExists( table ObjectTagXorCustomKey )      /* Проверяет, существует ли такой объект в дереве: {"TagName", "ObjectParameter"}. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
---                 [M] bool IsTreeExists( table TreeTagXorCustomKey )          /* Проверяет, существует ли такое дерево в дереве: {"TagName", "TreeParameter"}. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
---                 [M] bool CaptureInnerTree( table TreeTagXorCustomKey )      /* Помещает найденное дерево внутри дерева в TREE (новое дерево становится активным). Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
+--                 [M] bool IsObjectExists( table ObjectTagXorCustomKey, string CustomKeyValue )      /* Проверяет, существует ли такой объект в дереве: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
+--                 [M] bool IsTreeExists( table TreeTagXorCustomKey, string CustomKeyValue )          /* Проверяет, существует ли такое дерево в дереве: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
+--                 [M] bool CaptureInnerTree( table TreeTagXorCustomKey, string CustomKeyValue )      /* Помещает найденное дерево внутри дерева в TREE (новое дерево становится активным). Пользовательские ключи задаются в PARSER.KEYS */
 --                 [M] bool Add( table itemParams, bool Enters, bool Spaces, table includeKeysForSort )         /* Добавляет новый item в дерево. bool Enters добавляет пробелы (отступы) сверху добавляемых объектов. bool Spaces добавляет пробелы (отступы) между значениями добавляемых объектов. Сортирует новые ключи параметров сверху вниз, если указаны. Сортируемые ключи по умолчанию определяются классом нового элемента */
 --                 [M] bool Remove( table itemParams or "self")       /* Удаляет item в дереве. Укажите аргументом строку "self" для удаления дерева TREE (активного дерева) */ 
 --                 [M] string GetName()        /* Возвращает имя тега дерева */
@@ -274,11 +275,11 @@
 --                 [M] int GetParamsAmount()    /* Возвращает количество параметров дерева */
 --                 [M] bool AddParam( const char* ParameterName, const CStr& ParameterValue, bool Spaces )       /* Добавляет новый параметр дерева. bool Spaces добавляет пробелы (отступы) между значениями добавляемого параметра */
 --                 [M] bool RemoveParam( const char* ParameterName )        /* Удаляет параметр дерева */
---                 [M] table GetObjectByCustomKey( string CustomKey )       /* Возвращает первый найденный объект дерева по пользовательскому параметру. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
+--                 [M] table GetObjectByCustomKey( string CustomKey )       /* Возвращает первый найденный объект дерева по пользовательскому параметру. Пользовательские ключи задаются в PARSER.KEYS */
 --                 [M] table GetObjectByName( const char* ItemObjName )     /* Возвращает первый найденный объект дерева по Name */
 --                 [M] table GetObjectById( const int* Id )         /* Возвращает первое найденный объект дерева по айди */
 --                 [M] table GetObject( const char* ItemName )      /* Возвращает первый найденный объект дерева по тегу */
---                 [M] table GetTreeByCustomKey( string CustomKey )        /* Возвращает первое найденное дерево по пользовательскому параметру. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
+--                 [M] table GetTreeByCustomKey( string CustomKey )        /* Возвращает первое найденное дерево по пользовательскому параметру. Пользовательские ключи задаются в PARSER.KEYS */
 --                 [M] table GetTreeByName( const char* TreeObjName )      /* Возвращает первое найденное дерево по Name внутри дерева */
 --                 [M] table GetTreeById( const int* Id )          /* Возвращает первое найденное дерево по айди внутри дерева */
 --                 [M] table GetTree( const char* TreeName )       /* Возвращает первое найденное дерево по тегу внутри дерева */
@@ -293,12 +294,14 @@
 --                 [M] bool UnwrapAllItems()     /* Разворачивает все items дерева */
 --                 [M] bool AddEnters()          /* Добавляет отступы между элементами, если нет */
 --                 [M] bool CleanEnters()        /* Убирает отступы между элементами, если есть */
---                 [M] string ReadAsTextField( bool CutTabs )       /* Возвращает содержимое между тегами дерева. Удаляет табуляцию в возвращаемом значении, если CutTabs = true */
---     
---     
+--                 [M] string AddAsTextField( const table* fieldParams, string TextFieldValue, bool Enters )    /* Добавляет fieldParams дерево как поле текста со значением TextFieldValue. Делает отсупы если Enters = true */
+--                 [M] string ReadAsTextField( const table* fieldParams, bool CutTabs )       /* Возвращает содержимое между тегами дерева, ищет по fieldParams. Удаляет табуляцию в возвращаемом значении, если CutTabs = true */
+--                 [M] string EditAsTextField( const table* fieldParams, string TextFieldNewValue )         /* Редактирует fieldParams дерево как поле текста с новым значением TextFieldNewValue */
+--
+--
 --                 Class OBJ
 --                 {
---                     [M] OBJ GetObj( table ObjectTagXorCustomKey ) : public Tree       /* Это прямое обращение к объекту OBJ: {"TagName", "ObjectParameter"}. Пользовательским ключом может быть: [Name], [name], [ObjectId], [Id], [id], [_customValue] */
+--                     [M] OBJ GetObj( table ObjectTagXorCustomKey, string CustomKeyValue ) : public Tree       /* Это прямое обращение к объекту OBJ: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
 --                     {
 --                         [M] string GetName()         /* Возвращает имя тега объекта */
 --                         [M] string GetObjName()      /* Возвращает Name объекта */
@@ -417,6 +420,26 @@
 --
 ---------------------------------------------------------------
 --
+---------------------- Что такое "поле текста" ---------------------
+--
+-- Class TREE команды.
+--
+-- xml                                               |   xml
+-- [[                                                |   [[
+--      <Key>           --> Открывающий тег          |           <Key Name="Field">64</Key>
+--      </Key>          --> Закрывающий тег          |   ]]       
+-- ]]                                                |   
+--                                                   |
+-- xml                                               |   xml
+-- [[                                                |   [[
+--      <Key Name="Текст">Первая строка текста       |           <Key>       --> Плохой пример поля без уникального параметра имени или айди
+--          Вторая строка текста                     |           </Key>        
+--      </Key>                                       |   ]]        
+--                                                   |           
+-- ]]                                                |   
+--
+---------------------------------------------------------------
+--
 ---------------------- Что такое "объект" ---------------------
 --
 -- Class OBJ команды.
@@ -525,14 +548,27 @@
 local XMLParser = {}
 XMLParser.__index = XMLParser
 XMLParser.version = "v1.0"
+XMLParser.data = {}
+local PARSER = XMLParser.data
 
 LOG("[I] Init Module XMLParser.lua ...")
+
+
+-- ////////////////////////// DEFAULT MODULE CONSTANTS //////////////////////////
+
+
+PARSER.KEYS_ForSearching = {"Name", "name", "ObjectId", "Id", "id", "field", "_customValue"}
+PARSER.KEYS_Name = {"Name", "name"}
+PARSER.KEYS_Id = {"ObjectId", "Id", "id"}
+PARSER.KEYS_ForAttributeFilter = {"ObjectId", "Id", "id", "Name", "name", "field", "Value", "ListOfItems", "Chassis", "Cabin", "Cargo", "Skin", "ListOfGuns", "Item", "Amount", "Maximum", "Description", "Difficulty", "Done"}
+
+PARSER.KEYS_FORBIDDEN = {_itemClass=1, _itemLine=1, _itemParent=1, _itemProperties=1, _itemTag=1}
 
 
 -- ////////////////////////// DEFAULT MODULE ITEMS //////////////////////////
 
 
-local treeExample = {
+PARSER.treeExample = {
     _itemClass = "tree", 
     _itemTag = "TreeExample", 
     Name = "Example",
@@ -541,7 +577,7 @@ local treeExample = {
     Description = "jopa",
 }
 
-local itemExample = {
+PARSER.itemExample = {
     _itemClass = "object", 
     _itemTag = "Object", 
     Name = "obj",
@@ -550,21 +586,21 @@ local itemExample = {
     Param4 = "value4",
 }
 
-EX_ModStats_Repo = {
+PARSER.ModStats_Repo = {
     _itemClass = "tree",
     _itemTag = "Repository", 
     Name = "TestObjects",
     Amount = "2",
     Maximum = "3"
 }
-EX_ModStats_Endi = {
+PARSER.ModStats_Endi = {
     _itemClass = "object",
     _itemTag = "Ending", 
     Name = "Выжить",
     Description = "Сохранить зрение",
     Done = "true" --false
 }
-EX_ModStats_Achi = {
+PARSER.ModStats_Achi = {
     _itemClass = "object",
     _itemTag = "Achievement", 
     Name = "Я ебал в рот эти скрипты",
@@ -577,7 +613,7 @@ EX_ModStats_Achi = {
 
 
 local function parserLOG(...)
-    if EX_XMLParserLOG then
+    if PARSER.LOG then
         local logstr = {}
         for i, v in ipairs(arg) do
             if arg[i+1] then
@@ -589,7 +625,7 @@ local function parserLOG(...)
     end
 end
 local function parserPRINT(...)
-    if EX_XMLParserLOG then
+    if PARSER.LOG then
         local printstr = {}
         for i, v in ipairs(arg) do
             if arg[i+1] then
@@ -627,29 +663,29 @@ function XMLParser:clearCache()
     parserLOG(":::: global method XMLParser:clearCache ::::")
     parserLOG("Note: LOG is done. Please, use bLOG in XMLParser:init() for see parser LOG")
     
-    EX_XMLParserPATH = "data\\gamedata\\file_name.xml"
+    PARSER.PATH = "data\\gamedata\\file_name.xml"
 
-    EX_XMLParserROOT = "Main"
+    PARSER.ROOT = "Main"
 
-    EX_DefaultXMLParserFileContent = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<'..tostring(EX_XMLParserROOT)..'>\n</'..tostring(EX_XMLParserROOT)..'>'
+    PARSER.XML = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<'..tostring(PARSER.ROOT)..'>\n</'..tostring(PARSER.ROOT)..'>'
 
-    EX_XMLParserLOG = false
+    PARSER.LOG = false
 
-    EX_XMLParserENTERS = false
-    EX_XMLParserSPACES = false
+    PARSER.ENTERS = false
+    PARSER.SPACES = false
 
-    EX_AcceptableObjectClasses = {"tree", "object", "item"}
+    PARSER.CLASSES = {"tree", "object", "item"}
 
-    EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = nil
-    EX_XMLPARSER_GLOBAL_AUTOUPDATE = false
-    EX_XMLPARSER_GLOBAL_TREEDATA = {}
-    EX_XMLPARSER_GLOBAL_TREEPARAMS = {}
-    EX_XMLPARSER_GLOBAL_FILEDATA = {}
-    EX_XMLPARSER_GLOBAL_CACHEDFILEDATA = nil
-    EX_XMLPARSER_GLOBAL_TREEFIRSTLINE = nil
-    EX_XMLPARSER_GLOBAL_TREELASTLINE = nil
+    PARSER.OPENEDFILEDESCRYPTOR = nil
+    PARSER.AUTOUPDATE = false
+    PARSER.TREEDATA = {}
+    PARSER.TREEPARAMS = {}
+    PARSER.FILEDATA = {}
+    PARSER.CACHEDFILEDATA = nil
+    PARSER.TREEFIRSTLINE = nil
+    PARSER.TREELASTLINE = nil
 
-    EX_XMLPARSER_CACHE_TREEPARAMS = nil
+    PARSER.CACHE_TREEPARAMS = nil
 end
 
 XMLParser:clearCache()
@@ -659,27 +695,18 @@ XMLParser:clearCache()
 function XMLParser:getCache()
     parserLOG(":::: global method XMLParser:getCache ::::")
 
-          LOG("[I] Module XMLParser.lua === Call current module cache...")
-          LOG("[I] [1] EX_XMLParserLOG is {"..tostring(EX_XMLParserLOG).."}")
-    parserLOG("[I] [2] EX_XMLParserENTERS is {"..tostring(EX_XMLParserENTERS).."}")
-    parserLOG("[I] [3] EX_XMLParserSPACES is {"..tostring(EX_XMLParserSPACES).."}") 
-    parserLOG("[I] [4] EX_XMLParserPATH is {"..tostring(EX_XMLParserPATH).."}")
-    parserLOG("[I] [5] EX_XMLParserROOT is {"..tostring(EX_XMLParserROOT).."}")
-    parserLOG("[I] [6] EX_XMLPARSER_GLOBAL_AUTOUPDATE is {"..tostring(EX_XMLPARSER_GLOBAL_AUTOUPDATE).."}")
-    parserLOG("[I] [7] EX_AcceptableObjectClasses is \n{\n".._TableToString(EX_AcceptableObjectClasses).."\n}")
-    parserLOG("[I] [8] EX_DefaultXMLParserFileContent is \n{\n"..tostring(EX_DefaultXMLParserFileContent).."\n}")
-    parserLOG("[I] [9] EX_XMLPARSER_GLOBAL_TREEFIRSTLINE is {"..tostring(EX_XMLPARSER_GLOBAL_TREEFIRSTLINE).."}")
-    parserLOG("[I] [10] EX_XMLPARSER_GLOBAL_TREELASTLINE is {"..tostring(EX_XMLPARSER_GLOBAL_TREELASTLINE).."}")
-    parserLOG("[I] [11] EX_XMLPARSER_GLOBAL_TREEPARAMS is \n{\n".._TableToString(EX_XMLPARSER_GLOBAL_TREEPARAMS).."\n}")
-    parserLOG("[I] [12] EX_XMLPARSER_CACHE_TREEPARAMS is \n{\n".._TableToString(EX_XMLPARSER_CACHE_TREEPARAMS).."\n}")
-    parserLOG("[I] [13] EX_XMLPARSER_GLOBAL_TREEDATA is \n{\n".._TableToString(EX_XMLPARSER_GLOBAL_TREEDATA).."\n}")
-    parserLOG("[I] [14] EX_XMLPARSER_GLOBAL_FILEDATA is \n{\n".._TableToString(EX_XMLPARSER_GLOBAL_FILEDATA).."\n}")
-    parserLOG("[I] [15] EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR is \n{\n"..tostring(EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR).."\n}")
-    parserLOG("[I] [16] EX_XMLPARSER_GLOBAL_CACHEDFILEDATA is \n{\n".._TableToString(EX_XMLPARSER_GLOBAL_CACHEDFILEDATA).."\n}")
+    LOG("[I] Module XMLParser.lua === Call current module cache...")
+    local i = 1
+    local cache = {}
+    for k,v in pairs(PARSER) do
+        LOG("[I] ["..i.."] PARSER."..tostring(k).." is {"..tostring(v).."}")
+        table.insert(cache, v)
+        i=i+1
+    end
 
     parserLOG(":::: ^^^^ global method XMLParser:getCache ^^^^ ::::")
 
-    return {EX_XMLParserLOG, EX_XMLParserENTERS, EX_XMLParserSPACES, EX_XMLParserPATH, EX_XMLParserROOT, EX_XMLPARSER_GLOBAL_AUTOUPDATE, EX_AcceptableObjectClasses, EX_DefaultXMLParserFileContent, EX_XMLPARSER_GLOBAL_TREEFIRSTLINE, EX_XMLPARSER_GLOBAL_TREELASTLINE, EX_XMLPARSER_GLOBAL_TREEPARAMS, EX_XMLPARSER_CACHE_TREEPARAMS, EX_XMLPARSER_GLOBAL_TREEDATA, EX_XMLPARSER_GLOBAL_FILEDATA, EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR, EX_XMLPARSER_GLOBAL_CACHEDFILEDATA}
+    return cache
 end
 
 
@@ -788,7 +815,7 @@ end
 
 local function update_array_ordered(new_array)
     local new_len = getn(new_array)
-    local result = EX_XMLPARSER_GLOBAL_CACHEDFILEDATA
+    local result = PARSER.CACHEDFILEDATA
     local i = 1
 
     if not result then
@@ -833,7 +860,7 @@ local function update_array_ordered(new_array)
         table.remove(result)
     end
 
-    EX_XMLPARSER_GLOBAL_CACHEDFILEDATA = result
+    PARSER.CACHEDFILEDATA = result
 
     return result
 end
@@ -842,9 +869,9 @@ end
 local function GetRootTagInFile(content, root_tag_in_file)
     parserLOG(":::: local function GetRootTagInFile ::::")
     local root_tag_in_file = root_tag_in_file or ""
-    local content = content or EX_XMLPARSER_GLOBAL_CACHEDFILEDATA or EX_XMLPARSER_GLOBAL_FILEDATA or {}
+    local content = content or PARSER.CACHEDFILEDATA or PARSER.FILEDATA or {}
 
-    EX_XMLPARSER_GLOBAL_CACHEDFILEDATA = content
+    PARSER.CACHEDFILEDATA = content
 
     local fast_content = table.concat(content)
     if (string.find(fast_content, "<"..root_tag_in_file..">?")) and (string.find(fast_content, "</"..root_tag_in_file..">")) then
@@ -852,6 +879,23 @@ local function GetRootTagInFile(content, root_tag_in_file)
     end
 
     return nil
+end
+
+
+local function GetItemKey(itemParams, tableKeys)
+    for i,k in ipairs(tableKeys or {}) do
+        if itemParams[k] and not PARSER.KEYS_FORBIDDEN[k] then
+            return k, itemParams[k]
+        end
+    end
+end
+
+local function CopyItemParams(itemParams)
+    local copied_params = {}
+    for k,v in pairs(itemParams) do
+        copied_params[k] = v
+    end
+    return copied_params
 end
 
 
@@ -867,16 +911,16 @@ local function WriteXMLParserFileForTable(content)
     if (not content) or (not type(content)=="table") then 
         return nil 
     end
-    local path_to_file = EX_XMLParserPATH
+    local path_to_file = PARSER.PATH
 
-    local file = EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR
+    local file = PARSER.OPENEDFILEDESCRYPTOR
     pcall(function() return file:close() end)
 
     file = io.open(path_to_file, "w")
-    EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = file
+    PARSER.OPENEDFILEDESCRYPTOR = file
 
     if not file then
-        EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = nil
+        PARSER.OPENEDFILEDESCRYPTOR = nil
         return nil
     end
 
@@ -888,8 +932,8 @@ local function WriteXMLParserFileForTable(content)
     end
     file:close()
 
-    EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = nil
-    EX_XMLPARSER_GLOBAL_CACHEDFILEDATA = nil
+    PARSER.OPENEDFILEDESCRYPTOR = nil
+    PARSER.CACHEDFILEDATA = nil
 
     parserLOG("writttt")
 
@@ -919,6 +963,22 @@ local function PackStringFromTable(tbl, bRemoveTABS)
     end
     retVal = savedTabs..retVal
     return retVal
+end
+
+
+local function PackTableFromString(input_string)
+    local result = {}
+    local start = 1
+    while start <= string.len(input_string) do
+        local _, next_pos, line = string.find(input_string, "([^\n]*)\n?", start)
+        if line then
+            table.insert(result, line)
+            start = next_pos + 1
+        else
+            break
+        end
+    end
+    return result
 end
 
 
@@ -1043,34 +1103,25 @@ end
 
 local function CheckXMLParserFileForTree(treeParams, bNotReturnContent)
     parserLOG(":::: local function CheckXMLParserFileForTree ::::")
-    local treeParams = treeParams or treeExample
+    local treeParams = treeParams or PARSER.treeExample
 
     local tree_name
     local tree_objName
     --local tree_key
     if type(treeParams)~="table" then
-        tree_name = treeParams or EX_XMLParserROOT
+        tree_name = treeParams or PARSER.ROOT
         tree_objName = nil
     else
-        tree_name = treeParams["_itemTag"] or EX_XMLParserROOT
-        tree_objName = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or nil
-        -- local tree_key_func = function() 
-        --     if treeParams["Name"] then return "Name" end
-        --     if treeParams["name"] then return "name" end
-        --     if treeParams["ObjectId"] then return "ObjectId" end
-        --     if treeParams["Id"] then return "Id" end
-        --     if treeParams["id"] then return "id" end
-        --     if treeParams["_customValue"] then return "_customValue" end
-        -- end
-        -- tree_key = tree_key_func()
+        tree_name = treeParams["_itemTag"] or PARSER.ROOT
+        _, tree_objName = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
     end
 
-    local content = EX_XMLPARSER_GLOBAL_CACHEDFILEDATA or EX_XMLPARSER_GLOBAL_FILEDATA or {}
+    local content = PARSER.CACHEDFILEDATA or PARSER.FILEDATA or {}
     local fast_content = table.concat(content)
 
     if not (string.find(fast_content, "<"..tree_name.."(\n*)")) or not (string.find(fast_content, "</"..tree_name..">")) then
-        LOG("[E] Module XMLParser.lua === Tree <"..tree_name.."> in '"..EX_XMLParserPATH.."' not found")
-        parserPRINT("Tree <"..tree_name.."> in '"..EX_XMLParserPATH.."' not found")
+        LOG("[E] Module XMLParser.lua === Tree <"..tree_name.."> in '"..PARSER.PATH.."' not found")
+        parserPRINT("Tree <"..tree_name.."> in '"..PARSER.PATH.."' not found")
         return nil
     end
 
@@ -1100,8 +1151,8 @@ local function CheckXMLParserFileForTree(treeParams, bNotReturnContent)
             end
             parserLOG(">>> "..content[firstLine])
             parserLOG(">>> "..content[lastLine])
-            parserLOG("[I] Module XMLParser.lua === Finded tree <"..tree_name.."> in '"..EX_XMLParserPATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
-            parserPRINT("Finded tree <"..tree_name.."> in '"..EX_XMLParserPATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
+            parserLOG("[I] Module XMLParser.lua === Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
+            parserPRINT("Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
         end
     end
 
@@ -1117,27 +1168,27 @@ local function CheckItemClass(put_inParams, itemParams, whoChecker)
     local whoChecker = whoChecker or {}
     local put_in = put_inParams["_itemClass"] or "tree"
     if not itemParams["_itemClass"] then
-        LOG("[E] Module XMLParser.lua === Attempt to check unknown class item for \""..put_in.."\" in '"..EX_XMLParserPATH.."'")
-        error("XMLParser: Attempt to check unknown class item for \""..put_in.."\" in '"..EX_XMLParserPATH.."'")
+        LOG("[E] Module XMLParser.lua === Attempt to check unknown class item for \""..put_in.."\" in '"..PARSER.PATH.."'")
+        error("XMLParser: Attempt to check unknown class item for \""..put_in.."\" in '"..PARSER.PATH.."'")
         return nil
     end
     local classExists, i = false, 1
-    while EX_AcceptableObjectClasses[i]~=nil do
-        if EX_AcceptableObjectClasses[i]==itemParams["_itemClass"] then
+    while PARSER.CLASSES[i]~=nil do
+        if PARSER.CLASSES[i]==itemParams["_itemClass"] then
             classExists = true
         end
         i=i+1
     end
     if not classExists then
-        LOG("[E] Module XMLParser.lua === Attempt to check unknown class item for \""..put_in.."\" in '"..EX_XMLParserPATH.."'")
-        error("XMLParser: Attempt to check unknown class item for \""..put_in.."\" in '"..EX_XMLParserPATH.."'")
+        LOG("[E] Module XMLParser.lua === Attempt to check unknown class item for \""..put_in.."\" in '"..PARSER.PATH.."'")
+        error("XMLParser: Attempt to check unknown class item for \""..put_in.."\" in '"..PARSER.PATH.."'")
         return nil
     end
     i=1
     while whoChecker[i]~=nil do
         if itemParams["_itemClass"]==whoChecker[i] then
-            LOG("[E] Module XMLParser.lua === Attempt to check conflict class item for \""..put_in.."\" in '"..EX_XMLParserPATH.."'")
-            error("XMLParser: Attempt to check conflict class item for \""..put_in.."\" in '"..EX_XMLParserPATH.."'")
+            LOG("[E] Module XMLParser.lua === Attempt to check conflict class item for \""..put_in.."\" in '"..PARSER.PATH.."'")
+            error("XMLParser: Attempt to check conflict class item for \""..put_in.."\" in '"..PARSER.PATH.."'")
             return nil
         end
         i=i+1
@@ -1148,15 +1199,15 @@ end
 
 local function CheckXMLParserFileTreeForItem(treeParams, itemParams)
     parserLOG(":::: local function CheckXMLParserFileTreeForItem ::::")
-    local treeParams = treeParams or treeExample
-    local itemParams = itemParams or itemExample
+    local treeParams = treeParams or PARSER.treeExample
+    local itemParams = itemParams or PARSER.itemExample
 
     local put_in = treeParams
     if not CheckItemClass(put_in, itemParams) then
         return nil
     end
 
-    local itemParamForSearch = itemParams["Name"] or itemParams["name"] or itemParams["ObjectId"] or itemParams["Id"] or itemParams["id"] or itemParams["_customValue"] or nil
+    local _, itemParamForSearch = GetItemKey(itemParams, PARSER.KEYS_ForSearching)
 
     local treeData, content, firstLine, lastLine = XMLParser:getTree(treeParams)
     local item = 1
@@ -1167,16 +1218,10 @@ local function CheckXMLParserFileTreeForItem(treeParams, itemParams)
             while treeData[2][item]~=nil do
                 local Obj = treeData[2][item]["_itemTag"]
                 local ObjClass = treeData[2][item]["_itemClass"]
-                local ObjParamForSearch
-                if itemParams["Name"]           then ObjParamForSearch = treeData[2][item]["_itemProperties"]["Name"] 
-                elseif itemParams["name"]       then ObjParamForSearch = treeData[2][item]["_itemProperties"]["name"]
-                elseif itemParams["ObjectId"]   then ObjParamForSearch = treeData[2][item]["_itemProperties"]["ObjectId"]
-                elseif itemParams["Id"]         then ObjParamForSearch = treeData[2][item]["_itemProperties"]["Id"]
-                elseif itemParams["id"]         then ObjParamForSearch = treeData[2][item]["_itemProperties"]["id"]
-                elseif itemParams["_customValue"] then ObjParamForSearch = treeData[2][item]["_itemProperties"][itemParams["_customValue"]] end
+                local _, ObjParamForSearch = GetItemKey(treeData[2][item]["_itemProperties"], PARSER.KEYS_ForSearching)
                 if (itemParams["_itemClass"]=="tree") and ((Obj==itemParams["treeName"]) and (ObjParamForSearch==itemParamForSearch) and (ObjClass==itemParams["_itemClass"])) then
-                    parserLOG("[E] Module XMLParser.lua === "..tostring(itemParams["_itemTag"]).." with class '"..tostring(itemParams["_itemClass"]).."' and value \""..tostring(itemParamForSearch).."\" in tree <"..tostring(treeName).."> '"..EX_XMLParserPATH.."' already exists")
-                    parserPRINT("[E] Module XMLParser.lua === "..tostring(itemParams["_itemTag"]).." with class '"..tostring(itemParams["_itemClass"]).."' and value \""..tostring(itemParamForSearch).."\" in tree <"..tostring(treeName).."> '"..EX_XMLParserPATH.."' already exists")
+                    parserLOG("[E] Module XMLParser.lua === "..tostring(itemParams["_itemTag"]).." with class '"..tostring(itemParams["_itemClass"]).."' and value \""..tostring(itemParamForSearch).."\" in tree <"..tostring(treeName).."> '"..PARSER.PATH.."' already exists")
+                    parserPRINT("[E] Module XMLParser.lua === "..tostring(itemParams["_itemTag"]).." with class '"..tostring(itemParams["_itemClass"]).."' and value \""..tostring(itemParamForSearch).."\" in tree <"..tostring(treeName).."> '"..PARSER.PATH.."' already exists")
                     return true, itemParams, content, firstLine, lastLine 
                 end
                 item=item+1
@@ -1190,10 +1235,10 @@ end
 
 local function CheckXMLParserFileTreeForTree(treeParams_put_in, treeParams)
     parserLOG(":::: local function CheckXMLParserFileTreeForTree ::::")
-    local treeParams_put_in = treeParams_put_in or EX_XMLParserROOT
-    local treeParams = treeParams or treeExample
+    local treeParams_put_in = treeParams_put_in or PARSER.ROOT
+    local treeParams = treeParams or PARSER.treeExample
 
-    local treeParamForSearch = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or nil
+    local _, treeParamForSearch = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
 
     local treeData, content, firstLine, lastLine = XMLParser:getTree(treeParams_put_in)
     local tree = 1
@@ -1204,16 +1249,10 @@ local function CheckXMLParserFileTreeForTree(treeParams_put_in, treeParams)
             while treeData[2][tree]~=nil do
                 local Obj = treeData[2][tree]["_itemTag"]
                 local ObjClass = treeData[2][tree]["_itemClass"]
-                local ObjParamForSearch
-                if itemParams["Name"]           then ObjParamForSearch = treeData[2][item]["_itemProperties"]["Name"] 
-                elseif itemParams["name"]       then ObjParamForSearch = treeData[2][item]["_itemProperties"]["name"]
-                elseif itemParams["ObjectId"]   then ObjParamForSearch = treeData[2][item]["_itemProperties"]["ObjectId"]
-                elseif itemParams["Id"]         then ObjParamForSearch = treeData[2][item]["_itemProperties"]["Id"]
-                elseif itemParams["id"]         then ObjParamForSearch = treeData[2][item]["_itemProperties"]["id"]
-                elseif itemParams["_customValue"] then ObjParamForSearch = treeData[2][item]["_itemProperties"][itemParams["_customValue"]] end
+                local _, ObjParamForSearch = GetItemKey(treeData[2][item]["_itemProperties"], PARSER.KEYS_ForSearching)
                 if (treeParams["_itemClass"]=="tree") and ((Obj==treeParams["treeName"]) and (ObjParamForSearch==treeParamForSearch) and (ObjClass==treeParams["_itemClass"])) then
-                    parserLOG("[E] Module XMLParser.lua === "..tostring(treeParams["_itemTag"]).." with value \""..tostring(treeParamForSearch).."\" in tree <"..tostring(treeName).."> '"..EX_XMLParserPATH.."' already exists")
-                    parserPRINT("[E] Module XMLParser.lua === "..tostring(treeParams["_itemTag"]).." with value \""..tostring(treeParamForSearch).."\" in tree <"..tostring(treeName).."> '"..EX_XMLParserPATH.."' already exists")
+                    parserLOG("[E] Module XMLParser.lua === "..tostring(treeParams["_itemTag"]).." with value \""..tostring(treeParamForSearch).."\" in tree <"..tostring(treeName).."> '"..PARSER.PATH.."' already exists")
+                    parserPRINT("[E] Module XMLParser.lua === "..tostring(treeParams["_itemTag"]).." with value \""..tostring(treeParamForSearch).."\" in tree <"..tostring(treeName).."> '"..PARSER.PATH.."' already exists")
                     return true, treeParams, content, firstLine, lastLine 
                 end
                 tree=tree+1
@@ -1333,14 +1372,14 @@ end
 --g_XMLParser:init()
 function XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bLog)
     parserLOG(":::: global method XMLParser:init ::::")
-    local path_to_file = path_to_file or EX_XMLParserPATH
-    local default_file_content = default_file_content or EX_DefaultXMLParserFileContent
-    local root_tag_in_file = root_tag_in_file or EX_XMLParserROOT
+    local path_to_file = path_to_file or PARSER.PATH
+    local default_file_content = default_file_content or PARSER.XML
+    local root_tag_in_file = root_tag_in_file or PARSER.ROOT
 
-    local file = EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR
+    local file = PARSER.OPENEDFILEDESCRYPTOR
     if is_file_open(file) then
         pcall(function() return file:close() end)
-        EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = nil
+        PARSER.OPENEDFILEDESCRYPTOR = nil
     end
 
     local content = XMLParser:openQueue(path_to_file)
@@ -1349,12 +1388,12 @@ function XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bL
         println("[E] Module XMLParser.lua === File '"..tostring(path_to_file).."' does not exists!")
         return nil
     end
-    file = EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR
+    file = PARSER.OPENEDFILEDESCRYPTOR
 
     if bLog then
-        EX_XMLParserLOG = true
+        PARSER.LOG = true
     else
-        EX_XMLParserLOG = false
+        PARSER.LOG = false
     end
 
     local exists = GetRootTagInFile(content, root_tag_in_file)
@@ -1364,9 +1403,9 @@ function XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bL
         return nil
     end
 
-    EX_XMLParserPATH = path_to_file
-    EX_XMLParserROOT = root_tag_in_file
-    EX_DefaultXMLParserFileContent = default_file_content
+    PARSER.PATH = path_to_file
+    PARSER.ROOT = root_tag_in_file
+    PARSER.XML = default_file_content
 
     return true, file
 end
@@ -1383,13 +1422,13 @@ end
 --g_XMLParser:createFile()
 function XMLParser:createFile(path, default_file_content)
     parserLOG(":::: global method XMLParser:createFile ::::")
-    local path = path or EX_XMLParserPATH
+    local path = path or PARSER.PATH
     local file = io.open(path, "r")
     if not file then
         file = io.open(path, "w")
-        local default_file_content = default_file_content or EX_DefaultXMLParserFileContent
-        if default_file_content then EX_DefaultXMLParserFileContent = default_file_content end
-        file:write(EX_DefaultXMLParserFileContent)
+        local default_file_content = default_file_content or PARSER.XML
+        if default_file_content then PARSER.XML = default_file_content end
+        file:write(PARSER.XML)
         file:close()
         file = nil
         return true
@@ -1401,7 +1440,7 @@ end
 --g_XMLParser:removeFile()
 function XMLParser:removeFile()
     parserLOG(":::: global method XMLParser:removeFile ::::")
-    local path = EX_XMLParserPATH
+    local path = PARSER.PATH
     local file = io.open(path, "r")
     if file then
         file:close()
@@ -1417,21 +1456,14 @@ end
 --g_XMLParser:addTree({_itemClass = "tree", _itemTag = "ExampleTree2"}, "TreeExample")
 function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     parserLOG(":::: global method XMLParser:addTree ::::")
-    local treeParams = treeParams or treeExample
+    local treeParams = treeParams or PARSER.treeExample
 
     local treeObjName = treeParams["_itemTag"] or "Tree"
 
-    local put_inParams = {
-        _itemClass = put_in["_itemClass"] or "tree",
-        _itemTag = put_in["_itemTag"] or EX_XMLParserROOT,
-        _itemLine = put_in["_itemLine"] or EX_XMLPARSER_GLOBAL_TREEFIRSTLINE,
-        Name = put_in["Name"] or nil,
-        name = put_in["name"] or nil,
-        ObjectId = put_in["ObjectId"] or nil,
-        Id = put_in["Id"] or nil,
-        id = put_in["id"] or nil,
-        _customValue = put_in["_customValue"] or nil
-    }
+    put_in._itemClass = put_in._itemClass or "tree"
+    put_in._itemTag = put_in._itemTag or PARSER.ROOT
+    put_in._itemLine = put_in._itemLine or PARSER.TREEFIRSTLINE
+    local put_inParams = CopyItemParams(put_in)
 
     if not put_inParams["_itemClass"]=="tree" then
         LOG("[E] Module XMLParser.lua === Invalid item class")
@@ -1448,8 +1480,8 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     end
 
     -- if (string.find(fast_content, "<"..tostring(treeParams["_itemTag"]).."(\n*)")) or (string.find(fast_content, "</"..tostring(treeParams["_itemTag"])..">")) then
-    --     parserLOG("[E] Module XMLParser.lua === Tree with name \""..tostring(treeParams["_itemTag"]).."\" in '"..EX_XMLParserPATH.."' already exists")
-    --     parserPRINT("XMLParser: Tree with name \""..tostring(treeParams["_itemTag"]).."\" in '"..EX_XMLParserPATH.."' already exists")
+    --     parserLOG("[E] Module XMLParser.lua === Tree with name \""..tostring(treeParams["_itemTag"]).."\" in '"..PARSER.PATH.."' already exists")
+    --     parserPRINT("XMLParser: Tree with name \""..tostring(treeParams["_itemTag"]).."\" in '"..PARSER.PATH.."' already exists")
     --     return nil
     -- end
     fast_content = nil
@@ -1472,7 +1504,7 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
 
     local curLine = firstLine
     local genTree_upTag = savedTabs.."\t<"..tostring(treeParams["_itemTag"])
-    -- if EX_XMLParserENTERS then
+    -- if PARSER.ENTERS then
     --     if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], '"%s*>')) or (string.find(content[firstLine], '<[^>]>?')) then
     --         genTree_upTag = "\n"..genTree_upTag
     --     end
@@ -1480,7 +1512,7 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     table.insert(content, firstLine, genTree_upTag)
 
     local strSpaces = ""
-    if EX_XMLParserSPACES then
+    if PARSER.SPACES then
         strSpaces = " "
     end
 
@@ -1513,7 +1545,7 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
 
     local genTree_downTag = savedTabs.."\t</"..tostring(treeParams["_itemTag"])..">"
     
-    if EX_XMLParserENTERS then
+    if PARSER.ENTERS then
         if string.find(content[curLine], "<[^/>]>?") then
             genTree_downTag = genTree_downTag.."\n"
         end
@@ -1538,10 +1570,10 @@ function XMLParser:removeTree(treeParams, startLine)
     --     _itemTag = "Repository",
     --     Name = "Endings"
     -- }
-    local treeName = treeParams["_itemTag"] or EX_XMLParserROOT
-    if treeName==(EX_XMLParserROOT or string.lower(EX_XMLParserROOT)) then
-        LOG("[E] Module XMLParser.lua === Tree with name \""..tostring(EX_XMLParserROOT).."\" in "..EX_XMLParserPATH.." cannot be deleted")
-        error("XMLParser: Tree with name \""..tostring(EX_XMLParserROOT).."\" in "..EX_XMLParserPATH.." cannot be deleted")
+    local treeName = treeParams["_itemTag"] or PARSER.ROOT
+    if treeName==(PARSER.ROOT or string.lower(PARSER.ROOT)) then
+        LOG("[E] Module XMLParser.lua === Tree with name \""..tostring(PARSER.ROOT).."\" in "..PARSER.PATH.." cannot be deleted")
+        error("XMLParser: Tree with name \""..tostring(PARSER.ROOT).."\" in "..PARSER.PATH.." cannot be deleted")
         return nil
     end
     
@@ -1553,26 +1585,29 @@ function XMLParser:removeTree(treeParams, startLine)
     local firstLine = startLine or firstLine
 
     while true do
-        if (not content[firstLine]) or (string.find(content[firstLine], "</"..treeName..">")) then
+        if not content[firstLine] then
+            break
+        end
+        if string.find(content[firstLine], "</"..treeName..">") then
+            table.remove(content, firstLine)
             break
         end
         table.remove(content, firstLine)
     end
-    table.remove(content, firstLine)
 
     firstLine = firstLine - 1
-    while (string.find(content[firstLine], "[\t*]") or string.find(content[firstLine], "%s*")) and not string.find(content[firstLine], ">") do
+    while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], ">") do
         table.remove(content, firstLine)
         firstLine = firstLine - 1
     end
     firstLine = firstLine + 1
-    while (string.find(content[firstLine], "[\t*]") or string.find(content[firstLine], "%s*")) and not string.find(content[firstLine], ">") do
+    while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], "<") do
         table.remove(content, firstLine)
     end
 
-    treeParams["Name"] = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or nil
-    parserLOG("[I] Module XMLParser.lua === Tree <"..treeParams["_itemTag"].."> with value \""..tostring(treeParams["Name"]).."\" in '"..EX_XMLParserPATH.."' deleted succesfully")
-    parserPRINT("Tree <"..treeParams["_itemTag"].."> with value \""..tostring(treeParams["Name"]).."\" in '"..EX_XMLParserPATH.."' deleted succesfully")
+    local _, name = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
+    parserLOG("[I] Module XMLParser.lua === Tree <"..treeParams["_itemTag"].."> with value \""..tostring(name).."\" in '"..PARSER.PATH.."' deleted succesfully")
+    parserPRINT("Tree <"..treeParams["_itemTag"].."> with value \""..tostring(name).."\" in '"..PARSER.PATH.."' deleted succesfully")
 
     --WriteXMLParserFileForTable(content)
     CollectContentTable(content)
@@ -1584,23 +1619,21 @@ end
 --g_XMLParser:getTree("TreeExample")
 function XMLParser:getTree(treeParams, put_in)
     parserLOG(":::: global method XMLParser:getTree ::::")
-    -- local treeExample = {
-    --     _itemClass = "tree", 
-    --     _itemTag = "ModStatsDescription",
-    --     --Name = "Endings"
-    -- }
+    local treeParams = treeParams or PARSER.treeExample
+    local put_in = put_in or PARSER.ROOT
 
-    local treeParams = treeParams or treeExample
-    local put_in = put_in or EX_XMLParserROOT
+    local treeName = treeParams["_itemTag"] or PARSER.ROOT
+    local _, treeObjName = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
+    
+    --debug
+    -- if treeParams._itemTag=="Special" then
+    --     PARSER.LOG = true
+    -- end
 
-    local treeName = treeParams["_itemTag"] or EX_XMLParserROOT
-    local treeObjName = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or nil
-    
-    
     local folder, _, folder_firstLine, folder_lastLine = CheckXMLParserFileForTree(put_in, true)
     if not folder then
-        parserLOG("[E] Module XMLParser.lua === Parent tree with name \""..put_in.."\" in '"..EX_XMLParserPATH.."' does not exist")
-        parserPRINT("Parent tree with name \""..put_in.."\" in '"..EX_XMLParserPATH.."' does not exist")
+        parserLOG("[E] Module XMLParser.lua === Parent tree with name \""..put_in.."\" in '"..PARSER.PATH.."' does not exist")
+        parserPRINT("Parent tree with name \""..put_in.."\" in '"..PARSER.PATH.."' does not exist")
         return nil
     end
 
@@ -1649,7 +1682,8 @@ function XMLParser:getTree(treeParams, put_in)
     parserLOG("__enddd folder :: "..folder_lastLine)
     repeat
         local _, _, TreeObj_Name, TreeObj_Value = string.find(content[z], findParamPattern)
-        if (TreeObj_Name == treeParams["Name"] or TreeObj_Name == treeParams["name"] or TreeObj_Name == treeParams["ObjectId"] or TreeObj_Name == treeParams["Id"] or TreeObj_Name == treeParams["id"] or TreeObj_Name == treeParams["_customValue"]) and (TreeObj_Value==tostring(treeObjName)) then
+        local key, value = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
+        if (TreeObj_Name == key) and (TreeObj_Value==tostring(treeObjName)) then
             parserLOG("____stop line of tree <"..treeName.."> by name {"..tostring(treeObjName).."}")
             parserLOG("____line of tree name param:: "..z)
             break
@@ -1713,8 +1747,8 @@ function XMLParser:getTree(treeParams, put_in)
                 treeData[2] = nil
                 treeData[3] = nil
 
-                parserLOG("[E] Module XMLParser.lua === Tree \""..treeName.."\" in '"..EX_XMLParserPATH.."' is empty")
-                parserPRINT("Tree \""..treeName.."\" in '"..EX_XMLParserPATH.."' is empty")
+                parserLOG("[E] Module XMLParser.lua === Tree \""..treeName.."\" in '"..PARSER.PATH.."' is empty")
+                parserPRINT("Tree \""..treeName.."\" in '"..PARSER.PATH.."' is empty")
 
                 return treeData, content, firstLine, lastLine
             end
@@ -1764,6 +1798,9 @@ function XMLParser:getTree(treeParams, put_in)
                         treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
                     end
                 end
+                if string.find(content[curLine], itemTabs.."<"..getStrObject..">?[^<]*</"..getStrObject..">") then
+                    scanChilds = false
+                end
                 curLine=curLine+1
                 if string.find(content[curLine], "[^%s+]+</"..getStrObject..">") and not string.find(content[curLine], findObjectPattern.."%s*</"..getStrObject..">") then
                     scanChilds = false
@@ -1783,7 +1820,6 @@ function XMLParser:getTree(treeParams, put_in)
                 end
             end
 
-
             if not content[curLine] then
                 break
             end
@@ -1796,7 +1832,7 @@ function XMLParser:getTree(treeParams, put_in)
                 local child = 1
                 treeData[3][item]["_itemChilds"] = {}
                 repeat
-                    if not (content[curLine] == itemTabs.."</"..getStrObject..">") and not string.find(content[curLine-1], "[^%s+]+</"..getStrObject..">") then
+                    if not (content[curLine] == itemTabs.."</"..getStrObject..">") and not string.find(content[curLine-1], "[^<]+</"..getStrObject..">") and not string.find(content[curLine], itemTabs.."[^<]+</"..getStrObject..">") then
                         --parserLOG("skip "..content[curLine])
                         if not string.find(content[curLine], itemTabs..""..findObjectPattern) then
                             curLine=curLine+1
@@ -1806,7 +1842,7 @@ function XMLParser:getTree(treeParams, put_in)
                     if not content[curLine] then
                         break
                     end
-                    if (content[curLine] == itemTabs.."</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">") then
+                    if (content[curLine] == itemTabs.."</"..getStrObject..">") or string.find(content[curLine], itemTabs.."[^<]+</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">") then
                         --parserLOG("breakkkk "..content[curLine])
                         break
                     end
@@ -1823,8 +1859,8 @@ function XMLParser:getTree(treeParams, put_in)
                                 treeData[3][item]["_itemParent"] = getStrObject
                                 treeData[3][item]["_itemChilds"][child] = itemChild
                                 child=child+1
-                                    parserLOG("[I] Module XMLParser.lua === Tree with name \""..treeName.."\" in '"..EX_XMLParserPATH.."' has item <"..getStrObject.."> with childs by first tag \""..ifAgainTree.."\"")
-                                    parserPRINT("Tree with name \""..treeName.."\" in "..EX_XMLParserPATH.." has item <"..getStrObject.."> with childs by first tag \""..ifAgainTree.."\"")    
+                                    parserLOG("[I] Module XMLParser.lua === Tree with name \""..treeName.."\" in '"..PARSER.PATH.."' has item <"..getStrObject.."> with childs by first tag \""..ifAgainTree.."\"")
+                                    parserPRINT("Tree with name \""..treeName.."\" in "..PARSER.PATH.." has item <"..getStrObject.."> with childs by first tag \""..ifAgainTree.."\"")    
                             end
                             if (content[curLine] == itemTabs.."</"..ifAgainTree..">") or (content[curLine] == itemTabs.."</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">") then
                                 --dropMainChildsRepeat = true
@@ -1862,14 +1898,14 @@ function XMLParser:getTree(treeParams, put_in)
 
     local treeParams = treeData[1][lastStringParam]
     if not treeParams then 
-        parserLOG("[I] Module XMLParser.lua === Tree with name \""..treeName.."\" in '"..EX_XMLParserPATH.."' has no parameters")
-        parserPRINT("Tree with name \""..treeName.."\" in "..EX_XMLParserPATH.." has no parameters")
+        parserLOG("[I] Module XMLParser.lua === Tree with name \""..treeName.."\" in '"..PARSER.PATH.."' has no parameters")
+        parserPRINT("Tree with name \""..treeName.."\" in "..PARSER.PATH.." has no parameters")
         --treeData[1] = nil
     end
     local treeObjects = treeData[2][1]
     if not treeObjects then 
-        parserLOG("[I] Module XMLParser.lua === Tree with name \""..treeName.."\" in '"..EX_XMLParserPATH.."' has no items")
-        parserPRINT("Tree with name \""..treeName.."\" in '"..EX_XMLParserPATH.."' has no items")
+        parserLOG("[I] Module XMLParser.lua === Tree with name \""..treeName.."\" in '"..PARSER.PATH.."' has no items")
+        parserPRINT("Tree with name \""..treeName.."\" in '"..PARSER.PATH.."' has no items")
         treeData[2] = nil
         treeData[3] = nil
     end
@@ -1941,7 +1977,7 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
     if item["_itemClass"]=="tree" then
         item["_itemChilds"] = {}
         local child = 1
-        while content[curLine]~=startTabs.."</"..item["_itemTag"]..">" and content[curLine]~=parentTabs.."</"..parentName..">" do
+        while content[curLine]~=startTabs.."</"..item["_itemTag"]..">" and content[curLine]~=parentTabs.."</"..parentName..">" and not string.find(content[curLine], startTabs.."[^<]+</"..item["_itemTag"]..">") do
             -- if content[curLine-1] then
             --     if string.find(content[curLine-1], startTabs.."</"..item["_itemTag"]..">") then
             --         break
@@ -1976,9 +2012,9 @@ function XMLParser:openQueue(stringPATH)
 			content[i] = line
 			i=i+1
 		end
-		EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR = file
-        EX_XMLPARSER_GLOBAL_CACHEDFILEDATA = content
-        EX_XMLParserPATH = stringPATH
+		PARSER.OPENEDFILEDESCRYPTOR = file
+        PARSER.CACHEDFILEDATA = content
+        PARSER.PATH = stringPATH
         return content
     end
     return nil
@@ -1986,17 +2022,17 @@ end
 
 function XMLParser:closeQueue(content, file)
     parserLOG(":::: global method XMLParser:closeQueue ::::")
-    local content = content or EX_XMLPARSER_GLOBAL_CACHEDFILEDATA or EX_XMLPARSER_GLOBAL_FILEDATA
-    local file = file or EX_XMLPARSER_GLOBAL_OPENEDFILEDESCRYPTOR
+    local content = content or PARSER.CACHEDFILEDATA or PARSER.FILEDATA
+    local file = file or PARSER.OPENEDFILEDESCRYPTOR
     if not is_file_open(file) then
         LOG("[E] Module XMLParser.lua === Queue for file '"..tostring(file).."' already closed!")
         println("[E] Module XMLParser.lua === Queue for file '"..tostring(file).."' already closed!")
         return nil
     end
     if not content then
-        content = XMLParser:openQueue(EX_XMLParserPATH)
-        LOG("[E] Module XMLParser.lua === Script was triggered in an emergency! '"..tostring(EX_XMLParserPATH).."'")
-        println("[E] Module XMLParser.lua === Script was triggered in an emergency! '"..tostring(EX_XMLParserPATH).."'")
+        content = XMLParser:openQueue(PARSER.PATH)
+        LOG("[E] Module XMLParser.lua === Script was triggered in an emergency! '"..tostring(PARSER.PATH).."'")
+        println("[E] Module XMLParser.lua === Script was triggered in an emergency! '"..tostring(PARSER.PATH).."'")
     end
     return WriteXMLParserFileForTable(content)
 end
@@ -2009,7 +2045,7 @@ function XMLParser:GetItemFromFile(stringFindExample, stringItemTagName, stringI
 	local tagName = stringItemTagName or "Object"
 	local parentName = stringItemRepositoryName or "DynamicScene"
 
-	local content = EX_XMLPARSER_GLOBAL_CACHEDFILEDATA or EX_XMLPARSER_GLOBAL_FILEDATA or {}
+	local content = PARSER.CACHEDFILEDATA or PARSER.FILEDATA or {}
 	
     local gde_item_line = 1
     local parentTabs = ""
@@ -2041,7 +2077,7 @@ function XMLParser:RemoveItemFromFile(stringFindExample, stringItemTagName, stri
 	local tagName = stringItemTagName or "Object"
 	local parentName = stringItemRepositoryName or "DynamicScene"
 
-    local content = EX_XMLPARSER_GLOBAL_CACHEDFILEDATA or EX_XMLPARSER_GLOBAL_FILEDATA or {}
+    local content = PARSER.CACHEDFILEDATA or PARSER.FILEDATA or {}
 
     local gde_item_line = 1
     local parentTabs = ""
@@ -2139,6 +2175,13 @@ function XMLParser:SetItemValueInFile(stringFindExample, stringItemTagName, stri
 end
 
 
+function XMLParser:GetItemCustomKey(itemParams, tableKeys)
+    parserLOG(":::: global method XMLParser:GetItemCustomKey ::::")
+    local tableKeys = tableKeys or PARSER.KEYS_ForSearching
+    return GetItemKey(itemParams, tableKeys)
+end
+
+
 function XMLParser:getItemClass(content, curLine, getStrObject)
     parserLOG(":::: global method XMLParser:getItemClass ::::")
     local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
@@ -2197,30 +2240,23 @@ end
 --g_XMLParser:addObject(nil, "TreeExample")
 function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     parserLOG(":::: global method XMLParser:addObject ::::")
-    local put_inParams = {
-        _itemClass = put_in["_itemClass"] or "tree",
-        _itemTag = put_in["_itemTag"] or EX_XMLParserROOT,
-        _itemLine = put_in["_itemLine"] or EX_XMLPARSER_GLOBAL_TREEFIRSTLINE,
-        Name = put_in["Name"] or nil,
-        name = put_in["name"] or nil,
-        ObjectId = put_in["ObjectId"] or nil,
-        Id = put_in["Id"] or nil,
-        id = put_in["id"] or nil,
-        _customValue = put_in["_customValue"] or nil
-    }
+    put_in._itemClass = put_in._itemClass or "tree"
+    put_in._itemTag = put_in._itemTag or PARSER.ROOT
+    put_in._itemLine = put_in._itemLine or PARSER.TREEFIRSTLINE
+    local put_inParams = CopyItemParams(put_in)
 
     if not put_inParams["_itemClass"]=="tree" then
         LOG("[E] Module XMLParser.lua === Invalid item class")
         error("XMLParser: Invalid item class")
     end
 
-    local objectParams = objectParams or itemExample
+    local objectParams = objectParams or PARSER.itemExample
 
     objectParams["_itemTag"] = objectParams["_itemTag"] or "Object"
 
     if not objectParams["_itemClass"]=="object" then
-        LOG("[E] Module XMLParser.lua === Attempt to add item without class 'object' for \""..treeName.."\" in '"..EX_XMLParserPATH.."'")
-        error("XMLParser: Attempt to add item without class 'object' for \""..treeName.."\" in '"..EX_XMLParserPATH.."'")
+        LOG("[E] Module XMLParser.lua === Attempt to add item without class 'object' for \""..treeName.."\" in '"..PARSER.PATH.."'")
+        error("XMLParser: Attempt to add item without class 'object' for \""..treeName.."\" in '"..PARSER.PATH.."'")
         return nil
     end
 
@@ -2247,7 +2283,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
 
     local curLine = firstLine
     local genObject_upTag = savedTabs.."\t<"..tostring(objectParams["_itemTag"])
-    -- if EX_XMLParserENTERS then
+    -- if PARSER.ENTERS then
     --     if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], "<[^>]>?")) then
     --         genObject_upTag = "\n"..genObject_upTag
     --     end
@@ -2255,7 +2291,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     table.insert(content, firstLine, genObject_upTag)
 
     local strSpaces = ""
-    if EX_XMLParserSPACES then
+    if PARSER.SPACES then
         strSpaces = " "
     end
     
@@ -2284,7 +2320,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     end
     content[curLine] = content[curLine].." />"
 
-    if EX_XMLParserENTERS then
+    if PARSER.ENTERS then
         if string.find(content[curLine+1], "<[^/>]>?") then
             content[curLine] = content[curLine].."\n"
         end
@@ -2312,16 +2348,11 @@ function XMLParser:removeObject(treeParams, objectParams)
     --     --Name = "Нужна помощь?"
     -- }
 
-    local objectParams = objectParams or itemExample
-    local treeName = treeParams["_itemTag"] or EX_XMLParserROOT
+    local objectParams = objectParams or PARSER.itemExample
+    local treeName = treeParams["_itemTag"] or PARSER.ROOT
 
-    local KeyForSearch = "_customValue"
-    if objectParams["Name"]           then KeyForSearch = "Name"
-    elseif objectParams["name"]       then KeyForSearch = "name"
-    elseif objectParams["ObjectId"]   then KeyForSearch = "ObjectId"
-    elseif objectParams["Id"]         then KeyForSearch = "Id"
-    elseif objectParams["id"]         then KeyForSearch = "id"
-    elseif objectParams["_customValue"] then KeyForSearch = "_customValue" end
+    local KeyForSearch = GetItemKey(objectParams, PARSER.KEYS_ForSearching)
+    local _, treeee = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
     
     local treeData, content, firstLine, lastLine = XMLParser:getTree(treeParams)
 
@@ -2347,41 +2378,44 @@ function XMLParser:removeObject(treeParams, objectParams)
         elseif skoka==1 then
             objLine = treeData[2][objj]["_itemLine"]
         else
-            LOG("[E] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' not found")
-            error("XMLParser: Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' not found")
+            LOG("[E] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' not found")
+            error("XMLParser: Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' not found")
             return nil
         end
     end
     
     if objLine then
         while true do
-            if (not content[objLine]) or (string.find(content[objLine], "/>")) or (string.find(content[objLine], "</"..treeName..">")) then
+            if not content[objLine] then
+                break
+            end
+            if string.find(content[objLine], "</"..treeName..">") then
+                table.remove(content, objLine)
                 break
             end
             table.remove(content, objLine)
         end
-        table.remove(content, objLine)
 
         objLine = objLine - 1
-        while (string.find(content[objLine], "[\t*]") or string.find(content[objLine], "%s*")) and not string.find(content[objLine], ">") do
+        while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], ">") do
             table.remove(content, objLine)
             objLine = objLine - 1
         end
         objLine = objLine + 1
-        while (string.find(content[objLine], "[\t*]") or string.find(content[objLine], "%s*")) and not string.find(content[objLine], "<") do
+        while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], "<") do
             table.remove(content, objLine)
         end
 
-        parserLOG("[I] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' deleted succesfully")
-        parserPRINT("Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' deleted succesfully")
+        parserLOG("[I] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' deleted succesfully")
+        parserPRINT("Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' deleted succesfully")
 
         --WriteXMLParserFileForTable(content)
         CollectContentTable(content)
         return true
     end
 
-    parserLOG("[I] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' not found")
-    parserPRINT("Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeParams["Name"]).."\" '"..EX_XMLParserPATH.."' not found")
+    parserLOG("[I] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' not found")
+    parserPRINT("Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' not found")
 
     return false
 end
@@ -2389,14 +2423,14 @@ end
 
 function XMLParser:Wrap(objectParams)
     parserLOG(":::: global method XMLParser:Wrap ::::")
-    local fast_content = EX_XMLPARSER_GLOBAL_TREEDATA
-    local content = _CopyTable(EX_XMLPARSER_GLOBAL_FILEDATA)
-    local firstLine = EX_XMLPARSER_GLOBAL_TREEFIRSTLINE
-    local lastLine = EX_XMLPARSER_GLOBAL_TREELASTLINE
-    local itemName = EX_XMLPARSER_GLOBAL_TREEDATA[1]["_itemTag"]
+    local fast_content = PARSER.TREEDATA
+    local content = _CopyTable(PARSER.FILEDATA)
+    local firstLine = PARSER.TREEFIRSTLINE
+    local lastLine = PARSER.TREELASTLINE
+    local itemName = PARSER.TREEDATA[1]["_itemTag"]
     if type(objectParams)=="table" then
         firstLine = objectParams["_itemLine"] or firstLine
-        itemName = objectParams["_itemTag"] or EX_XMLPARSER_GLOBAL_TREEDATA[1]["_itemTag"]
+        itemName = objectParams["_itemTag"] or PARSER.TREEDATA[1]["_itemTag"]
     end
 
     if fast_content and content and firstLine and lastLine and itemName then
@@ -2469,11 +2503,11 @@ end
 
 function XMLParser:Unwrap(objectParams)
     parserLOG(":::: global method XMLParser:Unwrap ::::")
-    local fast_content, content, firstLine, lastLine = EX_XMLPARSER_GLOBAL_TREEDATA, EX_XMLPARSER_GLOBAL_FILEDATA, EX_XMLPARSER_GLOBAL_TREEFIRSTLINE, EX_XMLPARSER_GLOBAL_TREELASTLINE
-    local itemName = EX_XMLPARSER_GLOBAL_TREEDATA[1]["_itemTag"]
+    local fast_content, content, firstLine, lastLine = PARSER.TREEDATA, PARSER.FILEDATA, PARSER.TREEFIRSTLINE, PARSER.TREELASTLINE
+    local itemName = PARSER.TREEDATA[1]["_itemTag"]
     if type(objectParams)=="table" then
         firstLine = objectParams["_itemLine"] or firstLine
-        itemName = objectParams["_itemTag"] or EX_XMLPARSER_GLOBAL_TREEDATA[1]["_itemTag"]
+        itemName = objectParams["_itemTag"] or PARSER.TREEDATA[1]["_itemTag"]
     end
 
     if fast_content and content and firstLine and lastLine and itemName then
@@ -2546,9 +2580,9 @@ end
 function XMLParser:AutoUpdateTree(bool)
     parserLOG(":::: global method XMLParser:AutoUpdateTree ::::")
     if bool then
-        EX_XMLPARSER_GLOBAL_AUTOUPDATE = true
+        PARSER.AUTOUPDATE = true
     else
-        EX_XMLPARSER_GLOBAL_AUTOUPDATE = false
+        PARSER.AUTOUPDATE = false
     end
 end
 
@@ -2557,21 +2591,7 @@ function XMLParser:GetTagAndCustomKeyFromItem(itemParams)
     parserLOG(":::: global method XMLParser:GetTagAndCustomKeyFromItem ::::")
     if not itemParams then itemParams = {} end
     local tag = itemParams["_itemTag"]
-    local customKey = itemParams["Name"] or itemParams["name"] or itemParams["ObjectId"] or itemParams["Id"] or itemParams["id"] or itemParams["_customValue"] or nil
-    local f = function() 
-        if itemParams["_itemProperties"]["Name"] then return itemParams["_itemProperties"]["Name"] end
-        if itemParams["_itemProperties"]["name"] then return itemParams["_itemProperties"]["name"] end
-        if itemParams["_itemProperties"]["ObjectId"] then return itemParams["_itemProperties"]["ObjectId"] end
-        if itemParams["_itemProperties"]["Id"] then return itemParams["_itemProperties"]["Id"] end
-        if itemParams["_itemProperties"]["id"] then return itemParams["_itemProperties"]["id"] end
-        if itemParams["_itemProperties"]["_customValue"] then return itemParams["_itemProperties"]["_customValue"] end
-        return nil
-    end
-    local f_
-    if itemParams["_itemProperties"] then
-        f_ = f()
-    end
-    if f_ then customKey = f_ end
+    local customKey = GetItemKey(itemParams, PARSER.KEYS_ForSearching)
     return {tag, customKey}
 end
 
@@ -2586,18 +2606,18 @@ function XMLParser:GetLineWithContent(line, stringContent)
 
     local strLine 
     if line and stringContent then
-        if string.find(EX_XMLPARSER_GLOBAL_FILEDATA[line], stringContent) then
-            strLine = EX_XMLPARSER_GLOBAL_FILEDATA[line]
+        if string.find(PARSER.FILEDATA[line], stringContent) then
+            strLine = PARSER.FILEDATA[line]
         end
     elseif stringContent then
-        for i, v in ipairs(EX_XMLPARSER_GLOBAL_FILEDATA) do
+        for i, v in ipairs(PARSER.FILEDATA) do
             if string.find(v, stringContent) then
-                strLine = EX_XMLPARSER_GLOBAL_FILEDATA[i]
+                strLine = PARSER.FILEDATA[i]
                 break
             end
         end
     elseif line then
-        strLine = EX_XMLPARSER_GLOBAL_FILEDATA[line]
+        strLine = PARSER.FILEDATA[line]
     end
 
     return strLine, line
@@ -2614,30 +2634,30 @@ function XMLParser:RemoveLineWithContent(line, stringContent)
 
     local strLine 
     if line and stringContent then
-        if string.find(EX_XMLPARSER_GLOBAL_FILEDATA[line], stringContent) then
-            strLine = EX_XMLPARSER_GLOBAL_FILEDATA[line]
+        if string.find(PARSER.FILEDATA[line], stringContent) then
+            strLine = PARSER.FILEDATA[line]
             if strLine then
-                table.remove(EX_XMLPARSER_GLOBAL_FILEDATA, line)
+                table.remove(PARSER.FILEDATA, line)
             end
         end
     elseif stringContent then
-        for i, v in ipairs(EX_XMLPARSER_GLOBAL_FILEDATA) do
+        for i, v in ipairs(PARSER.FILEDATA) do
             if string.find(v, stringContent) then
-                strLine = EX_XMLPARSER_GLOBAL_FILEDATA[i]
-                table.remove(EX_XMLPARSER_GLOBAL_FILEDATA, i)
+                strLine = PARSER.FILEDATA[i]
+                table.remove(PARSER.FILEDATA, i)
                 break
             end
         end
     elseif line then
-        strLine = EX_XMLPARSER_GLOBAL_FILEDATA[line]
+        strLine = PARSER.FILEDATA[line]
         if strLine then
-            table.remove(EX_XMLPARSER_GLOBAL_FILEDATA, line)
+            table.remove(PARSER.FILEDATA, line)
         end
     end
 
     if strLine then
-        --WriteXMLParserFileForTable(EX_XMLPARSER_GLOBAL_FILEDATA)
-        CollectContentTable(EX_XMLPARSER_GLOBAL_FILEDATA)
+        --WriteXMLParserFileForTable(PARSER.FILEDATA)
+        CollectContentTable(PARSER.FILEDATA)
 
         return true, line, strLine
     end
@@ -2648,7 +2668,7 @@ end
 function XMLParser:AddCommentNearItem(comment, objectParams)
     parserLOG(":::: global method XMLParser:AddCommentNearItem ::::")
     local comment = comment or ""
-    local objectParams = objectParams or itemExample
+    local objectParams = objectParams or PARSER.itemExample
     if not type(objectParams)=="table" then
         LOG("[E] Module XMLParser.lua === Invalid objectParams data")
         parserPRINT("Invalid objectParams data")
@@ -2660,29 +2680,24 @@ function XMLParser:AddCommentNearItem(comment, objectParams)
         return nil
     end
 
-    local KeyForSearch = "_customValue"
-    if objectParams["Name"]           then KeyForSearch = "Name"
-    elseif objectParams["name"]       then KeyForSearch = "name"
-    elseif objectParams["ObjectId"]   then KeyForSearch = "ObjectId"
-    elseif objectParams["Id"]         then KeyForSearch = "Id"
-    elseif objectParams["id"]         then KeyForSearch = "id"
-    elseif objectParams["_customValue"] then KeyForSearch = "_customValue" end
+    local KeyForSearch = GetItemKey(objectParams, PARSER.KEYS_ForSearching)
 
     objectParams[1] = objectParams["_itemClass"] or objectParams[1]
     objectParams[2] = objectParams["_itemTag"] or objectParams[2]
     objectParams[3] = objectParams["_customValue"] or KeyForSearch or objectParams[3]
+    local stringCustomKeyValue = objectParams[objectParams[3]]
 
     XMLParser:Tree():tryUpdate()
 
-    local idValue = objectParams["ObjectId"] or objectParams["Id"] or objectParams["id"] or nil
+    local _, idValue = GetItemKey(objectParams, PARSER.KEYS_Id)
 
     local itemData
     if objectParams[1]=="object" then
         if idValue then objectParams[3] = idValue end
-        itemData = XMLParser:Tree():GetObj({objectParams[2], objectParams[3]})
+        itemData = XMLParser:Tree():GetObj({objectParams[2], objectParams[3]}, stringCustomKeyValue)
     elseif objectParams[1]=="tree" then
         local treeById = XMLParser:Tree():GetTreeById(idValue)
-        local treeByCustomKey = XMLParser:Tree():GetTreeByCustomKey(KeyForSearch)
+        local treeByCustomKey = XMLParser:Tree():GetTreeByCustomKey(KeyForSearch, stringCustomKeyValue)
         local treeByName = XMLParser:Tree():GetTreeByName(objectParams[3])
         local treeByTag = XMLParser:Tree():GetTree(objectParams[2])
 
@@ -2723,10 +2738,10 @@ function XMLParser:AddCommentNearItem(comment, objectParams)
 
     local commentStr = "<!-- "..comment.." -->"
 
-    table.insert(EX_XMLPARSER_GLOBAL_FILEDATA, commentLine, commentStr)
+    table.insert(PARSER.FILEDATA, commentLine, commentStr)
 
-    --WriteXMLParserFileForTable(EX_XMLPARSER_GLOBAL_FILEDATA)
-    CollectContentTable(EX_XMLPARSER_GLOBAL_FILEDATA)
+    --WriteXMLParserFileForTable(PARSER.FILEDATA)
+    CollectContentTable(PARSER.FILEDATA)
     
     return true, commentLine
 end
@@ -2830,7 +2845,7 @@ function XMLParser:trigger(stringTriggerName)
         end
 
         local read_triggers_file = function()
-            local path = EX_XMLParserPATH
+            local path = PARSER.PATH
             local content = XMLParser:openQueue(path)
             return content
         end
@@ -3162,32 +3177,34 @@ end
 --XMLParser:Tree({_itemTag="Repository", Name="Achievements"}):init()
 function XMLParser:Tree(treeParams)
     parserLOG(":::: global method XMLParser:Tree ::::")
-    local treeParams = treeParams or EX_XMLPARSER_CACHE_TREEPARAMS
+    local treeParams = treeParams or PARSER.CACHE_TREEPARAMS
     if (not treeParams) or (not type(treeParams)=="table") then 
-        treeParams = {_itemTag = EX_XMLParserROOT}
+        treeParams = {_itemTag = PARSER.ROOT}
     elseif (type(treeParams)=="table") and (treeParams["_itemTag"]==nil) then
         treeParams = {
             _itemTag = treeParams[1],
             _customValue = treeParams[2]
         }
     end
-    EX_XMLPARSER_CACHE_TREEPARAMS = treeParams
+    PARSER.CACHE_TREEPARAMS = treeParams
 
     --LOG("\n"..tostring(_TableToString(treeParams)))
+
+    local treekey, treevalue = GetItemKey(treeParams, PARSER.KEYS_ForSearching)
     
     local TREE = {
-        treeName = treeParams["_itemTag"] or EX_XMLParserROOT,
-        treeObjName = treeParams["Name"] or treeParams["name"] or treeParams["ObjectId"] or treeParams["Id"] or treeParams["id"] or treeParams["_customValue"] or "",
+        treeName = treeParams["_itemTag"] or PARSER.ROOT,
+        treeObjName = treevalue or "",
         _customValue = treeParams["_customValue"],
-        treeParams = EX_XMLPARSER_GLOBAL_TREEPARAMS or EX_XMLPARSER_CACHE_TREEPARAMS,
-        treeData = EX_XMLPARSER_GLOBAL_TREEDATA or {},
-        content = EX_XMLPARSER_GLOBAL_CACHEDFILEDATA or EX_XMLPARSER_GLOBAL_FILEDATA or {},
-        firstLine = EX_XMLPARSER_GLOBAL_TREEFIRSTLINE or 1,
-        lastLine = EX_XMLPARSER_GLOBAL_TREELASTLINE or 1
+        treeParams = PARSER.TREEPARAMS or PARSER.CACHE_TREEPARAMS,
+        treeData = PARSER.TREEDATA or {},
+        content = PARSER.CACHEDFILEDATA or PARSER.FILEDATA or {},
+        firstLine = PARSER.TREEFIRSTLINE or 1,
+        lastLine = PARSER.TREELASTLINE or 1
     }
 
     function TREE:tryUpdate()
-        if EX_XMLPARSER_GLOBAL_AUTOUPDATE then
+        if PARSER.AUTOUPDATE then
             parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:tryUpdate ::::")
             parserLOG("[I] Module XMLParser.lua === AutoUpdateTree() is enabled")
             parserPRINT("AutoUpdateTree() is enabled")
@@ -3201,20 +3218,21 @@ function XMLParser:Tree(treeParams)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:init ::::")
         local treeData_, content_, firstLine_, lastLine_ = XMLParser:getTree(treeParams)
         if treeData_ and content_ and firstLine_ and lastLine_ then
+            local treekey, treevalue = GetItemKey(treeData_[1], PARSER.KEYS_ForSearching)
             --parserLOG("LITERAL\n".._TableToString(content_))
-            EX_XMLPARSER_GLOBAL_TREEPARAMS = treeParams
-            EX_XMLPARSER_CACHE_TREEPARAMS = treeParams
-            EX_XMLPARSER_GLOBAL_TREEDATA = treeData_
-            EX_XMLPARSER_GLOBAL_FILEDATA = content_
-            EX_XMLPARSER_GLOBAL_TREEFIRSTLINE = firstLine_
-            EX_XMLPARSER_GLOBAL_TREELASTLINE = lastLine_
-            TREE["treeName"] = treeData_[1]["_itemTag"] or EX_XMLParserROOT
-            TREE["treeObjName"] = treeData_[1]["Name"] or treeData_[1]["name"] or treeData_[1]["ObjectId"] or treeData_[1]["Id"] or treeData_[1]["id"] or treeData_[1]["_customValue"] or ""
-            TREE["treeParams"] = EX_XMLPARSER_GLOBAL_TREEPARAMS
-            TREE["treeData"] = EX_XMLPARSER_GLOBAL_TREEDATA
-            TREE["content"] = EX_XMLPARSER_GLOBAL_FILEDATA
-            TREE["firstLine"] = EX_XMLPARSER_GLOBAL_TREEFIRSTLINE
-            TREE["lastLine"] = EX_XMLPARSER_GLOBAL_TREELASTLINE
+            PARSER.TREEPARAMS = treeParams
+            PARSER.CACHE_TREEPARAMS = treeParams
+            PARSER.TREEDATA = treeData_
+            PARSER.FILEDATA = content_
+            PARSER.TREEFIRSTLINE = firstLine_
+            PARSER.TREELASTLINE = lastLine_
+            TREE["treeName"] = treeData_[1]["_itemTag"] or PARSER.ROOT
+            TREE["treeObjName"] = treevalue or ""
+            TREE["treeParams"] = PARSER.TREEPARAMS
+            TREE["treeData"] = PARSER.TREEDATA
+            TREE["content"] = PARSER.FILEDATA
+            TREE["firstLine"] = PARSER.TREEFIRSTLINE
+            TREE["lastLine"] = PARSER.TREELASTLINE
             --parserLOG("UPDATE\n".._TableToString(TREE["content"]))
             parserLOG("[I] Module XMLParser.lua === Tree <"..TREE["treeName"].."> with name '"..TREE["treeObjName"].."' updated")
             parserPRINT("Tree <"..TREE["treeName"].."> with name '"..TREE["treeObjName"].."' updated")
@@ -3241,34 +3259,27 @@ function XMLParser:Tree(treeParams)
         end
 
         if bEnters then
-            EX_XMLParserENTERS = true
+            PARSER.ENTERS = true
         else
-            EX_XMLParserENTERS = false
+            PARSER.ENTERS = false
         end
         if bSpaces then
-            EX_XMLParserSPACES = true
+            PARSER.SPACES = true
         else
-            EX_XMLParserSPACES = false
+            PARSER.SPACES = false
         end
 
-        local KeyForSearch = "_customValue"
-        if objectParams["Name"]           then KeyForSearch = "Name"
-        elseif objectParams["name"]       then KeyForSearch = "name"
-        elseif objectParams["ObjectId"]   then KeyForSearch = "ObjectId"
-        elseif objectParams["Id"]         then KeyForSearch = "Id"
-        elseif objectParams["id"]         then KeyForSearch = "id"
-        elseif objectParams["_customValue"] then KeyForSearch = "_customValue" end
+        local KeyForSearch, KeyValueForSearch = GetItemKey(objectParams, PARSER.KEYS_ForSearching)
 
         local added = false
+        local existing_object
         if objectParams["_itemClass"]=="tree" then
-            local exists, obj = XMLParser:Tree():IsTreeExists({objectParams["_itemTag"], objectParams[KeyForSearch]})
-            --if exists and obj["_object"]["_itemClass"]=="object" then exists = false end
+            local exists, existing_object = XMLParser:Tree():IsTreeExists({objectParams["_itemTag"], objectParams[KeyForSearch]}, KeyValueForSearch)
             if not exists then
                 added = XMLParser:addTree(objectParams, TREE["treeData"][1], includeKeysForSort)
             end
         elseif objectParams["_itemClass"]=="object" then
-            local exists, obj = XMLParser:Tree():IsObjectExists({objectParams["_itemTag"], objectParams[KeyForSearch]})
-            --if exists and obj["_object"]["_itemClass"]=="tree" then exists = false end
+            local exists, existing_object = XMLParser:Tree():IsObjectExists({objectParams["_itemTag"], objectParams[KeyForSearch]}, KeyValueForSearch)
             if not exists then
                 added = XMLParser:addObject(objectParams, TREE["treeData"][1], includeKeysForSort)
             end
@@ -3283,7 +3294,7 @@ function XMLParser:Tree(treeParams)
             parserPRINT("Failed to add item with class '"..tostring(objectParams["_itemClass"]).."', tag <"..tostring(objectParams["_itemTag"]).."> and value \""..tostring(objectParams[KeyForSearch]).."\" to '"..tostring(TREE["treeData"][1]["_itemTag"]).."'")
         end
 
-        return nil
+        return nil, existing_object
     end
 
     function TREE:Remove(objectParams)
@@ -3315,27 +3326,16 @@ function XMLParser:Tree(treeParams)
             error("XMLParser: Invalid objectParams data")
         end
 
-        local KeyForSearch = "_customValue"
-        if objectParams["Name"]           then KeyForSearch = "Name"
-        elseif objectParams["name"]       then KeyForSearch = "name"
-        elseif objectParams["ObjectId"]   then KeyForSearch = "ObjectId"
-        elseif objectParams["Id"]         then KeyForSearch = "Id"
-        elseif objectParams["id"]         then KeyForSearch = "id"
-        elseif objectParams["_customValue"] then KeyForSearch = "_customValue" end
-        
-        if objectParams["_itemClass"]=="tree" then
-            local tree
-            local treeByName
-            local treeByTag
-            local treeByCustomKey
-            local treeById
-            if not objectParams["Name"] then objectParams["Name"] = "" end
-            local idValue = objectParams["ObjectId"] or objectParams["Id"] or objectParams["id"] or nil
+        local KeyForSearch, KeyValueForSearch = GetItemKey(objectParams, PARSER.KEYS_ForSearching)
 
-            treeById = TREE:GetTreeById(idValue)
-            treeByCustomKey = TREE:GetTreeByCustomKey(KeyForSearch)
-            treeByName = TREE:GetTreeByName(objectParams["Name"])
-            treeByTag = TREE:GetTree(objectParams["_itemTag"])
+        if objectParams["_itemClass"]=="tree" then
+            local _, idValue = GetItemKey(objectParams, PARSER.KEYS_Id)
+
+            local tree
+            local treeByName = TREE:GetTreeByName(objectParams["Name"] or "")
+            local treeByTag = TREE:GetTree(objectParams["_itemTag"])
+            local treeByCustomKey = TREE:GetTreeByCustomKey(KeyForSearch, KeyValueForSearch)
+            local treeById = TREE:GetTreeById(idValue)
 
             treeById = treeById or {}
             treeByCustomKey = treeByCustomKey or {}
@@ -3348,7 +3348,7 @@ function XMLParser:Tree(treeParams)
                 tree = treeByCustomKey
             elseif treeByName["_itemLine"]==treeByTag["_itemLine"] then
                 tree = treeByName
-            else
+            elseif treeByTag and not KeyValueForSearch then
                 tree = treeByTag
             end
 
@@ -3547,54 +3547,187 @@ function XMLParser:Tree(treeParams)
         return nil
     end
 
-    function TREE:ReadAsTextField(boolCutTabs)
-        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:ReadAsTextField ::::")
+    function TREE:AddAsTextField(fieldParams, stringTextFieldValue, boolEnters)
+        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:AddAsTextField ::::")
         TREE:tryUpdate()
-        local treeBody = ""
+        local textField
 
-        local file = TREE["content"]
-        local _itemLine = tonumber(TREE["firstLine"]) or 1
-        if file and _itemLine then
-            if file[_itemLine] then
-                local _,_, tabs = string.find(file[_itemLine], "(\t*)")
-                if not tabs then tabs = "" end
-                while file[_itemLine] do
-                    local _,_, shapkaContent = string.find(file[_itemLine], tabs.."<"..tostring(TREE["treeName"]).."[^>]*>%s*([^<]*)%s*[</"..tostring(TREE["treeName"])..">]?")
-                    if shapkaContent then
-                        treeBody = treeBody..shapkaContent
-                        if string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
-                            break
-                        end
-                        _itemLine = _itemLine + 1
-                    end
-                    if string.find(file[_itemLine], tabs.."</"..tostring(TREE["treeName"])..">") then
-                        break
-                    end
-                    if string.find(treeBody, "%w+") then
-                        treeBody = treeBody.."\n"
-                    end
+        stringTextFieldValue = stringTextFieldValue or ""
 
-                    local textContent = string.gsub(file[_itemLine], "</"..tostring(TREE["treeName"])..">", "")
-                    treeBody = treeBody..textContent
+        local fieldkey, stringCustomKeyValue = GetItemKey(fieldParams, PARSER.KEYS_ForSearching)
+        local tableTextFieldTagXorCustomKey = {fieldParams._itemTag, fieldkey}
 
-                    if string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
-                        break
-                    end
+        local exists = XMLParser:Tree():IsTreeExists(tableTextFieldTagXorCustomKey, stringCustomKeyValue)
+        if not exists or cachedItemLine then
+            local stringTextFieldName = tableTextFieldTagXorCustomKey[1]
+            local file = TREE["content"]
+            local _itemLine = cachedItemLine or tonumber(TREE["firstLine"]) or 1
+            if file and _itemLine then
+                if file[_itemLine] then
+                    local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                    if not tabs then tabs = "" end
 
                     _itemLine = _itemLine + 1
+
+                    textField = tabs..'\t<'..tostring(stringTextFieldName)
+                    if tableTextFieldTagXorCustomKey[2] then
+                        textField = textField..' '..tostring(fieldkey)..'="'..tostring(stringCustomKeyValue)..'"'
+                    end
+                    textField = textField..'>'
+                    if string.find(stringTextFieldValue, '\n') then
+                        local str = stringTextFieldValue
+                        if string.sub(str, -1)~="\n" then
+                            str = str.."\n"
+                        end
+                        local lines = {}
+                        local start_pos = 1
+                        while true do
+                            local end_pos = string.find(str, "\n", start_pos)
+                            if not end_pos then
+                                break
+                            end
+                            local line = string.sub(str, start_pos, end_pos - 1)
+                            line = ""..line
+                            if lines[1] then
+                                line = tabs.."\t\t"..line
+                            end
+                            table.insert(lines, line)
+                            start_pos = end_pos + 1
+                        end
+                        for i, v in ipairs(lines) do
+                            textField = textField..v..'\n'
+                        end
+                        if string.sub(stringTextFieldValue, -1)~="\n" then
+                            textField = string.sub(textField, 1, -2)
+                        else
+                            textField = textField..tabs..'\t'
+                        end
+                    else
+                        textField = textField..stringTextFieldValue
+                    end
+                    textField = textField..'</'..tostring(stringTextFieldName)..'>'
+
+                    if boolEnters then
+                        if not string.find(file[_itemLine], tabs..'</'..tostring(TREE["treeName"])) then
+                            textField = textField..'\n'
+                        end
+                    end
+
+                    table.insert(file, _itemLine, textField)
                 end
             end
         end
 
-        treeBody = string.gsub(treeBody, "<"..tostring(TREE["treeName"]).."[^>]*>", "")
+        parserLOG("add {"..tostring(textField).."}")
 
-        if boolCutTabs then
-            treeBody = string.gsub(treeBody, "\t", "")
+        return textField, _itemLine
+    end
+    function TREE:ReadAsTextField(fieldParams, boolNoLines)
+        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:ReadAsTextField ::::")
+        TREE:tryUpdate()
+        local treeBody = ""
+
+        local fieldkey, stringCustomKeyValue = "field", fieldParams.field
+        if not stringCustomKeyValue then
+            fieldkey, stringCustomKeyValue = GetItemKey(fieldParams, PARSER.KEYS_ForSearching)
+        end
+        local tableTextFieldTagXorCustomKey = {fieldParams._itemTag, fieldkey}
+
+        local exists, obj = XMLParser:Tree():IsTreeExists(tableTextFieldTagXorCustomKey, stringCustomKeyValue)
+        if exists then
+            local stringTextFieldName = tableTextFieldTagXorCustomKey[1]
+            local file = TREE["content"]
+            local _itemLine = obj._itemLine or tonumber(TREE["firstLine"]) or 1
+            if file and _itemLine then
+                if file[_itemLine] then
+                    local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                    if not tabs then tabs = "" end
+                    local field = {}
+                    while file[_itemLine] do
+                        table.insert(field, file[_itemLine])
+                        if string.find(file[_itemLine], "</"..tostring(stringTextFieldName)..">") or string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
+                            break
+                        end
+                        _itemLine=_itemLine+1
+                        if not file[_itemLine] then
+                            break
+                        end
+                    end
+                    field = table.concat(field, '\n')
+                    local _,_, fieldContent = string.find(field, "<"..tostring(stringTextFieldName).."[^>]*>([^<]*)</"..tostring(stringTextFieldName)..">")
+                    if fieldContent then
+                        treeBody = string.gsub(fieldContent, "\t", "")
+                        if string.sub(treeBody, -1)=="\n" then
+                            treeBody = string.sub(treeBody, 1, -2)
+                        end
+                    end
+                end
+            end
+        end
+
+        if boolNoLines then
+            treeBody = string.gsub(treeBody, "\n", "")
         end
 
         parserLOG("return {"..treeBody.."}")
 
         return treeBody
+    end
+    function TREE:EditAsTextField(fieldParams, stringTextFieldNewValue)
+        parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:EditAsTextField ::::")
+        TREE:tryUpdate()
+        local textField
+
+        local fieldkey, stringCustomKeyValue = "field", fieldParams.field
+        if not stringCustomKeyValue then
+            fieldkey, stringCustomKeyValue = GetItemKey(fieldParams, PARSER.KEYS_ForSearching)
+        end
+        local tableTextFieldTagXorCustomKey = {fieldParams._itemTag, fieldkey}
+
+        stringTextFieldNewValue = stringTextFieldNewValue or ""
+
+        local exists, obj = XMLParser:Tree():IsTreeExists(tableTextFieldTagXorCustomKey, stringCustomKeyValue)
+        if exists then
+            local stringTextFieldName = tableTextFieldTagXorCustomKey[1]
+            local file = TREE["content"]
+            local _itemLine = obj._itemLine or tonumber(TREE["firstLine"]) or 1
+            if file and _itemLine then
+                if file[_itemLine] then
+                    local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                    if not tabs then tabs = "" end
+
+                    local _itemLine_ = _itemLine
+                    local field = {}
+                    while file[_itemLine] do
+                        table.insert(field, file[_itemLine])
+                        if string.find(file[_itemLine], "</"..tostring(stringTextFieldName)..">") or string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
+                            break
+                        end
+                        _itemLine=_itemLine+1
+                        if not file[_itemLine] then
+                            break
+                        end
+                    end
+                    field = table.concat(field, '\n')
+                    stringTextFieldNewValue = string.gsub(stringTextFieldNewValue, '\n', '\n'..tabs..'\t')
+                    if string.sub(stringTextFieldNewValue, -1)=="\n" then
+                        stringTextFieldNewValue = stringTextFieldNewValue.."\n"..tabs
+                    end
+                    local field2 = string.gsub(field, "(<"..tostring(stringTextFieldName).."[^>]*>)[^<]*(</"..tostring(stringTextFieldName)..">)", "%1"..stringTextFieldNewValue.."%2")
+
+                    local content = table.concat(TREE["content"], '\n')
+                    content = string.gsub(content, field, field2)
+
+                    textField = stringTextFieldNewValue
+
+                    content = PackTableFromString(content)
+
+                    CollectContentTable(content)
+                end
+            end
+        end
+
+        return textField
     end
 
     function TREE:GetName()
@@ -3632,7 +3765,7 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="tree") then
-                    local idValue = TREE["treeData"][2][i]["_itemProperties"]["ObjectId"] or TREE["treeData"][2][i]["_itemProperties"]["Id"] or TREE["treeData"][2][i]["_itemProperties"]["id"] or nil
+                    local _, idValue = GetItemKey(TREE["treeData"][2][i]["_itemProperties"], PARSER.KEYS_Id)
                     if idValue and intId then
                         if tonumber(idValue)==tonumber(intId) then
                             return TREE["treeData"][2][i]
@@ -3644,7 +3777,7 @@ function XMLParser:Tree(treeParams)
         end
         return nil
     end
-    function TREE:GetTreeByCustomKey(stringCustomKey)
+    function TREE:GetTreeByCustomKey(stringCustomKey, stringCustomKeyValue)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:GetTreeByCustomKey ::::")
         TREE:tryUpdate()
         local stringCustomKey = stringCustomKey or ""
@@ -3652,8 +3785,16 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="tree") then
-                    if TREE["treeData"][2][i]["_itemProperties"][stringCustomKey] then
-                        return TREE["treeData"][2][i]
+                    local k = TREE["treeData"][2][i]["_itemProperties"][stringCustomKey]
+                    local v = stringCustomKeyValue
+                    if k then
+                        if v then
+                            if k==v then
+                                return TREE["treeData"][2][i]
+                            end
+                        else
+                            return TREE["treeData"][2][i]
+                        end
                     end
                 end
                 i=i+1
@@ -3669,7 +3810,8 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="tree") then
-                    if (TREE["treeData"][2][i]["_itemProperties"]["Name"]==stringTreeObjName) or (TREE["treeData"][2][i]["_itemProperties"]["name"]==stringTreeObjName) then
+                    local treekey, treevalue = GetItemKey(TREE["treeData"][2][i]["_itemProperties"], PARSER.KEYS_Name)
+                    if treevalue==stringTreeObjName then
                         return TREE["treeData"][2][i]
                     end
                 end
@@ -3733,7 +3875,7 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="object") and (TREE["treeData"][2][i]["_itemProperties"]) then
-                    local idValue = TREE["treeData"][2][i]["_itemProperties"]["ObjectId"] or TREE["treeData"][2][i]["_itemProperties"]["Id"] or TREE["treeData"][2][i]["_itemProperties"]["id"] or nil
+                    local _, idValue = GetItemKey(TREE["treeData"][2][i]["_itemProperties"], PARSER.KEYS_Id)
                     if idValue and intId then
                         if tonumber(idValue)==tonumber(intId) then
                             return TREE["treeData"][2][i]
@@ -3745,7 +3887,7 @@ function XMLParser:Tree(treeParams)
         end
         return nil
     end
-    function TREE:GetObjectByCustomKey(stringCustomKey)
+    function TREE:GetObjectByCustomKey(stringCustomKey, stringCustomKeyValue)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:GetObjectByName ::::")
         TREE:tryUpdate()
         local stringCustomKey = stringCustomKey or ""
@@ -3753,8 +3895,15 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="object") and (TREE["treeData"][2][i]["_itemProperties"]) then
-                    if TREE["treeData"][2][i]["_itemProperties"][stringCustomKey] then
-                        return TREE["treeData"][2][i]
+                    local keyval = TREE["treeData"][2][i]["_itemProperties"][stringCustomKey]
+                    if keyval then
+                        if stringCustomKeyValue then
+                            if keyval==stringCustomKeyValue then
+                                return TREE["treeData"][2][i]
+                            end
+                        else
+                            return TREE["treeData"][2][i]
+                        end
                     end
                 end
                 i=i+1
@@ -3770,7 +3919,8 @@ function XMLParser:Tree(treeParams)
         if TREE["treeData"][2] then
             while TREE["treeData"][2][i]~=nil do
                 if (TREE["treeData"][2][i]["_itemClass"]=="object") and (TREE["treeData"][2][i]["_itemProperties"]) then
-                    if (TREE["treeData"][2][i]["_itemProperties"]["Name"]==stringItemObjName) or (TREE["treeData"][2][i]["_itemProperties"]["name"]==stringItemObjName) then
+                    local objkey, objvalue = GetItemKey(TREE["treeData"][2][i]["_itemProperties"], PARSER.KEYS_Name)
+                    if objvalue==stringItemObjName then
                         return TREE["treeData"][2][i]
                     end
                 end
@@ -3834,18 +3984,18 @@ function XMLParser:Tree(treeParams)
 
     
 
-    function TREE:IsObjectExists(tableObjectTagXorCustomKey)
+    function TREE:IsObjectExists(tableObjectTagXorCustomKey, stringCustomKeyValue)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:IsObjectExists ::::")
         TREE:tryUpdate()
         local ObjectExists = false
-        local obj = TREE:GetObj(tableObjectTagXorCustomKey)
+        local obj = TREE:GetObj(tableObjectTagXorCustomKey, stringCustomKeyValue)
         if obj then
             ObjectExists = true
         end
         return ObjectExists, obj
     end
 
-    function TREE:IsTreeExists(tableTreeTagXorCustomKey)
+    function TREE:IsTreeExists(tableTreeTagXorCustomKey, stringCustomKeyValue)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:IsTreeExists ::::")
         TREE:tryUpdate()
         local TreeExists = false
@@ -3853,13 +4003,16 @@ function XMLParser:Tree(treeParams)
 
         local stringCustomKey = tableTreeTagXorCustomKey[2]
         local treeById = TREE:GetTreeById(stringCustomKey)
-        local treeByCustomKey = TREE:GetTreeByCustomKey(stringCustomKey)
+        local treeByCustomKey = TREE:GetTreeByCustomKey(stringCustomKey, stringCustomKeyValue)
         local treeByName = TREE:GetTreeByName(stringCustomKey)
         local stringTreeTag = tableTreeTagXorCustomKey[1]
         local treeByTag = TREE:GetTree(stringTreeTag)
         
-        -- println("{"..tostring(stringCustomKey).."}")
-        -- println("{"..tostring(stringTreeTag).."}")
+        -- println("stringCustomKeyValue {"..tostring(stringCustomKeyValue).."}")
+        -- println("stringCustomKey {"..tostring(stringCustomKey).."}")
+        -- println("stringTreeTag {"..tostring(stringTreeTag).."}")
+
+        --println(treeByCustomKey)
 
         if treeById then
             tree = treeById
@@ -3957,40 +4110,34 @@ function XMLParser:Tree(treeParams)
 
 
 
-    function TREE:CaptureInnerTree(tableTreeTagXorCustomKey)
+    function TREE:CaptureInnerTree(tableTreeTagXorCustomKey, stringCustomKeyValue)
         parserLOG(":::: global method XMLParser:Tree :::: global native function TREE:CaptureInnerTree ::::")
         TREE:tryUpdate()
 
-        local exists, tree = TREE:IsTreeExists(tableTreeTagXorCustomKey)
+        local exists, tree = TREE:IsTreeExists(tableTreeTagXorCustomKey, stringCustomKeyValue)
 
         if exists and tree then
-            treeParams = {
-                _itemClass = "tree",
-                _itemTag = tree["_itemTag"],
-                _itemLine = tree["_itemLine"],
-                Name = (function() if tree["_itemProperties"] then return tree["_itemProperties"]["Name"] end return nil end)(),
-                name = (function() if tree["_itemProperties"] then return tree["_itemProperties"]["name"] end return nil end)(),
-                ObjectId = (function() if tree["_itemProperties"] then return tree["_itemProperties"]["ObjectId"] end return nil end)(),
-                Id = (function() if tree["_itemProperties"] then return tree["_itemProperties"]["Id"] end return nil end)(),
-                id = (function() if tree["_itemProperties"] then return tree["_itemProperties"]["id"] end return nil end)(),
-                _customValue = (function() if tree["_itemProperties"] then return tree["_itemProperties"]["_customValue"] end return nil end)() or tree["_customValue"] or nil
-            }
+            tree["_itemProperties"]._itemClass = "tree"
+            tree["_itemProperties"]._itemTag = tree["_itemTag"]
+            tree["_itemProperties"]._itemLine = tree["_itemLine"]
+            treeParams = CopyItemParams(tree["_itemProperties"])
 
             local treeData_, content_, firstLine_, lastLine_ = XMLParser:getTree(treeParams)
             if treeData_ and content_ and firstLine_ and lastLine_ then
-                EX_XMLPARSER_GLOBAL_TREEPARAMS = treeParams
-                EX_XMLPARSER_CACHE_TREEPARAMS = treeParams
-                EX_XMLPARSER_GLOBAL_TREEDATA = treeData_
-                EX_XMLPARSER_GLOBAL_FILEDATA = content_
-                EX_XMLPARSER_GLOBAL_TREEFIRSTLINE = firstLine_
-                EX_XMLPARSER_GLOBAL_TREELASTLINE = lastLine_
-                TREE["treeName"] = treeData_[1]["_itemTag"] or EX_XMLParserROOT
-                TREE["treeObjName"] = treeData_[1]["Name"] or treeData_[1]["name"] or treeData_[1]["ObjectId"] or treeData_[1]["Id"] or treeData_[1]["id"] or treeData_[1]["_customValue"] or ""
-                TREE["treeParams"] = EX_XMLPARSER_GLOBAL_TREEPARAMS
-                TREE["treeData"] = EX_XMLPARSER_GLOBAL_TREEDATA
-                TREE["content"] = EX_XMLPARSER_GLOBAL_FILEDATA
-                TREE["firstLine"] = EX_XMLPARSER_GLOBAL_TREEFIRSTLINE
-                TREE["lastLine"] = EX_XMLPARSER_GLOBAL_TREELASTLINE
+                local treekey, treevalue = GetItemKey(treeData_[1], PARSER.KEYS_ForSearching)
+                PARSER.TREEPARAMS = treeParams
+                PARSER.CACHE_TREEPARAMS = treeParams
+                PARSER.TREEDATA = treeData_
+                PARSER.FILEDATA = content_
+                PARSER.TREEFIRSTLINE = firstLine_
+                PARSER.TREELASTLINE = lastLine_
+                TREE["treeName"] = treeData_[1]["_itemTag"] or PARSER.ROOT
+                TREE["treeObjName"] = treevalue or ""
+                TREE["treeParams"] = PARSER.TREEPARAMS
+                TREE["treeData"] = PARSER.TREEDATA
+                TREE["content"] = PARSER.FILEDATA
+                TREE["firstLine"] = PARSER.TREEFIRSTLINE
+                TREE["lastLine"] = PARSER.TREELASTLINE
                 --parserLOG("UPDATE\n".._TableToString(TREE["content"]))
                 parserLOG("[I] Module XMLParser.lua === Tree <"..TREE["treeName"].."> with name '"..TREE["treeObjName"].."' updated")
                 parserPRINT("Tree <"..TREE["treeName"].."> with name '"..TREE["treeObjName"].."' updated")
@@ -4135,13 +4282,13 @@ function XMLParser:Tree(treeParams)
 
 
     --class object
-    function TREE:GetObj(tableObjectTagXorCustomKey)
+    function TREE:GetObj(tableObjectTagXorCustomKey, stringCustomKeyValue)
         parserLOG(":::: global method XMLParser:Tree :::: global method TREE:GetObj ::::")
         TREE:tryUpdate()
         local object
         local stringCustomKey = tableObjectTagXorCustomKey[2]
         local objectById = TREE:GetObjectById(stringCustomKey)
-        local objectByCustomKey = TREE:GetObjectByCustomKey(stringCustomKey)
+        local objectByCustomKey = TREE:GetObjectByCustomKey(stringCustomKey, stringCustomKeyValue)
         local objectByName = TREE:GetObjectByName(stringCustomKey)
         local stringObjectTag = tableObjectTagXorCustomKey[1]
         local objectByTag = TREE:GetObject(stringObjectTag)
@@ -4348,7 +4495,8 @@ function XMLParser:Tree(treeParams)
         end
         function OBJ:GetObjName()
             parserLOG(":::: global method XMLParser:Tree :::: global method TREE:GetObj :::: global native function OBJ:GetObjName ::::")
-            return OBJ["_object"]["_itemProperties"]["Name"]
+            local objkey, objvalue = GetItemKey(OBJ["_object"]["_itemProperties"], PARSER.KEYS_Name)
+            return objvalue
         end
 
         function OBJ:GetPropertiesAmount()
