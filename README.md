@@ -63,22 +63,22 @@ LUA-МОДУЛЬ РАСПРОСТРАНЯЕТСЯ СВОБОДНО "КАК ЕС�
 
 Чтобы было понятнее, вспомним как мы обращаемся к машине игрока: 
 ```lua
-     local Plv = GetPlayerVehicle()
-     if Plv then
-         Plv:SetSkin(1)  --> метод на объект
-     end
+local Plv = GetPlayerVehicle()
+if Plv then
+    Plv:SetSkin(1)  --> метод на объект
+end
 ```
 Или к обжект контейнеру:
 ```lua
-     local Gde = CVector(1,2,3)
-     local Gde.y = g_ObjCont:GetHeight(Gde.x, Gde.z)  --> метод на объект
+local Gde = CVector(1,2,3)
+local Gde.y = g_ObjCont:GetHeight(Gde.x, Gde.z)  --> метод на объект
 ```
 
 После загрузки модуля в игру следует инициализировать его работу через метод `init()`. Это необходимо, чтобы указать парсеру файл для "анализа" и имя главного корня xml (дерева). Функция может быть вызвана вновь в любой момент.
 
 ### ФУНКЦИЯ `init()`
 ```lua
-     XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bLOG)
+XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bLOG)
 ```
 
 `path_to_file`            - путь к xml файлу *[string]*;
@@ -91,18 +91,18 @@ LUA-МОДУЛЬ РАСПРОСТРАНЯЕТСЯ СВОБОДНО "КАК ЕС�
 
 
 ```lua
-     local example_content = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<Root>\n<!-- здесь ваши данные -->\n</Root>'
+local example_content = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<Root>\n<!-- здесь ваши данные -->\n</Root>'
 ```
 
 ### Пример кода загрузки
 
 ```lua
-    g_XMLParser = require("data\\gamedata\\lua_lib\\xmlparser.lua")
-    if not g_XMLParser then
-        LOG("[E] Could not find global xmlparser.lua...")
-    else
-        g_XMLParser:init("data\\gamedata\\ModStats.xml", "ModStats", nil, false)
-    end
+g_XMLParser = require("data\\gamedata\\lua_lib\\xmlparser.lua")
+if not g_XMLParser then
+    LOG("[E] Could not find global xmlparser.lua...")
+else
+    g_XMLParser:init("data\\gamedata\\ModStats.xml", "ModStats", nil, false)
+end
 ```
 
 ## ТЕХНИКА БЕЗОПАСНОСТИ
@@ -289,30 +289,30 @@ end
 ## ОБРАЗЕЦ Params ДЕРЕВА/ОБЪЕКТА
 
 ```lua
-     local itemParams = {                /* Это таблица с ключами */
-          _itemClass = "tree",           --> Обязательный параметр. _itemClass задает сущность item. "tree" - для дерева, "object" - для объекта.
-          _itemTag = "TreeExample",      --> Обязательный параметр. _itemTag задает имя открывающего тега item (и закрывающего для дерева).
-          Name = "Example"               --> Необязательный, но очень рекомендуемый параметр. Ключевое значение, такое как (Name, name, ObjectId, Id, id) задает имя item внутри тегов. Незаменим для правильного поиска среди одинаковых тегов у объектов.
-     }                                   --> Ниже могут быть любые другие параметры без нижнего подчеркивания. Название параметра может быть любым буквенным ключом, значение параметра - строка.
+local itemParams = {                /* Это таблица с ключами */
+    _itemClass = "tree",           --> Обязательный параметр. _itemClass задает сущность item. "tree" - для дерева, "object" - для объекта.
+    _itemTag = "TreeExample",      --> Обязательный параметр. _itemTag задает имя открывающего тега item (и закрывающего для дерева).
+    Name = "Example"               --> Необязательный, но очень рекомендуемый параметр. Ключевое значение, такое как (Name, name, ObjectId, Id, id) задает имя item внутри тегов. Незаменим для правильного поиска среди одинаковых тегов у объектов.
+}                                   --> Ниже могут быть любые другие параметры без нижнего подчеркивания. Название параметра может быть любым буквенным ключом, значение параметра - строка.
 ```
 ```lua
-     local treeParams = {
-          _itemClass = "tree",
-          _itemTag = "TreeExample",
-          Name = "Example",
-          Param1 = "6",
-          Param2 = "true",
-          Description = "jopa",
-     }
+local treeParams = {
+    _itemClass = "tree",
+    _itemTag = "TreeExample",
+    Name = "Example",
+    Param1 = "6",
+    Param2 = "true",
+    Description = "jopa",
+}
 
-     local objectParams = {
-          _itemClass = "object",
-          _itemTag = "Object",
-          ObjectId = "627",
-          Description = "huy",
-          Param3 = "true",
-          Param4 = "value",
-     }
+local objectParams = {
+    _itemClass = "object",
+    _itemTag = "Object",
+    ObjectId = "627",
+    Description = "huy",
+    Param3 = "true",
+    Param4 = "value",
+}
 ```
 
 ## Что такое "дерево"
@@ -320,20 +320,20 @@ end
 Class TREE команды.
 
 ```xml
-     <RootTree>      --> Открывающий тег
-     </RootTree>     --> Закрывающий тег
+<RootTree>      --> Открывающий тег
+</RootTree>     --> Закрывающий тег
 ```
 ```xml
-     <TreeExample Name="Tree">
-     </TreeExample>
+<TreeExample Name="Tree">
+</TreeExample>
 
-     <Repository
-         Name="Пример"
-         Description="I am a tree">
-     </Repository>
+<Repository
+    Name="Пример"
+    Description="I am a tree">
+</Repository>
 
-     <Aboba>       --> Плохой пример дерева без уникального параметра имени или айди
-     </Aboba>
+<Aboba>       --> Плохой пример дерева без уникального параметра имени или айди
+</Aboba>
 ```
 
 ## Что такое "поле текста"
@@ -341,18 +341,18 @@ Class TREE команды.
 Class TREE команды.
 
 ```xml
-     <Key>           --> Открывающий тег
-     </Key>          --> Закрывающий тег
+<Key>           --> Открывающий тег
+</Key>          --> Закрывающий тег
 ```
 ```xml
-     <Key Name="Field">64</Key>
+<Key Name="Field">64</Key>
 
-     <Key Name="Текст">Первая строка текста
-          Вторая строка текста
-     </Key>
+<Key Name="Текст">Первая строка текста
+    Вторая строка текста
+</Key>
 
-     <Key>       --> Плохой пример поля без уникального параметра имени или айди
-     </Key>
+<Key>       --> Плохой пример поля без уникального параметра имени или айди
+</Key>
 ```
 
 ## Что такое "объект"
@@ -360,20 +360,20 @@ Class TREE команды.
 Class OBJ команды.
 
 ```xml
-     <Ware                 --> Открывающий тег   
-          Name="Картошка"                         
-     />                    --> Закрывающий флажок (тег)
+<Ware                 --> Открывающий тег   
+    Name="Картошка"                         
+/>                    --> Закрывающий флажок (тег)
 ```
 ```xml
-     <Item Id="666" Value="true" />              --> Объект 1
-     <Object Value="3" />                        --> Объект 2
-     <Entity Name="Параметр2" Value="false" />   --> Объект 3
+<Item Id="666" Value="true" />              --> Объект 1
+<Object Value="3" />                        --> Объект 2
+<Entity Name="Параметр2" Value="false" />   --> Объект 3
 
-     <Ending                           
-          Name="Спасибо за игру!"       
-          Description="Complete game" />
+<Ending                           
+    Name="Спасибо за игру!"       
+    Description="Complete game" />
 
-     <Object />       --> Плохой пример
+<Object />       --> Плохой пример
 ```
 
 ## СОВЕТЫ
@@ -383,43 +383,43 @@ Class OBJ команды.
 - Если вы читаете огромные файлы со сложной структурой, настоятельно рекомендую рассмотреть вариант с "очередью": `openQueue()` и `closeQueue()`. Он будет наиболее "оптимизированным" вариантом, который лучше справляется с большими файлами - игра заметно меньше страдает. Этот вариант сложнее поддается на проверки.
 Приведу несколько готовых скриптов-примеров:
 ```lua
-     --Получим XMLParser-объект игрока из сохранения и отдельно запишем ему новое значение денег
-     local path_to_savefile = 'data\\profiles\\Player\\saves\\00000000\\maps\\currentmap.xml'
-     XMLParser:openQueue( path_to_savefile )
-     local PLAYER = XMLParser:GetItemFromFile('Name%s*=%s*"Player1"', "Object", "DynamicScene")
-     XMLParser:SetItemValueInFile('Name%s*=%s*"Player1"', "Object", "DynamicScene", 'Money', '%d*', '99999999')
-     XMLParser:closeQueue()
+--Получим XMLParser-объект игрока из сохранения и отдельно запишем ему новое значение денег
+local path_to_savefile = 'data\\profiles\\Player\\saves\\00000000\\maps\\currentmap.xml'
+XMLParser:openQueue( path_to_savefile )
+local PLAYER = XMLParser:GetItemFromFile('Name%s*=%s*"Player1"', "Object", "DynamicScene")
+XMLParser:SetItemValueInFile('Name%s*=%s*"Player1"', "Object", "DynamicScene", 'Money', '%d*', '99999999')
+XMLParser:closeQueue()
 ```
 ```lua
-     --Изменим текст некоторых реплик из dialogsglobal.xml
-     local path_to_dialogsglobal = 'data\\if\\diz\\dialogsglobal.xml'
-     XMLParser:openQueue( path_to_dialogsglobal )
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg0_1"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg0_2"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg1_1"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg2_3"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg2_4"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg3_0"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg4_3"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
-     XMLParser:closeQueue()
-     if RepliesManager then
-          RepliesManager:Init()
-     end
+--Изменим текст некоторых реплик из dialogsglobal.xml
+local path_to_dialogsglobal = 'data\\if\\diz\\dialogsglobal.xml'
+XMLParser:openQueue( path_to_dialogsglobal )
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg0_1"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg0_2"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg1_1"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg2_3"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg2_4"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg3_0"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg4_3"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
+XMLParser:closeQueue()
+if RepliesManager then
+    RepliesManager:Init()
+end
 ```
 ```lua
-     --Найдем и удалим все ненужные объекты из world.xml
-     local path_to_world = 'data\\maps\\r1m1\\world.xml'
-     local tag = "Node"
-     local folder = "World"
-     local example = 'id%s*=%s*"big_stone4"'
-     XMLParser:openQueue( path_to_world )
-     local item = XMLParser:GetItemFromFile(example, tag, folder)
-     if item then
-          repeat
-               item = XMLParser:RemoveItemFromFile(example, tag, folder)
-          until not item
-     end
-     XMLParser:closeQueue()
+--Найдем и удалим все ненужные объекты из world.xml
+local path_to_world = 'data\\maps\\r1m1\\world.xml'
+local tag = "Node"
+local folder = "World"
+local example = 'id%s*=%s*"big_stone4"'
+XMLParser:openQueue( path_to_world )
+local item = XMLParser:GetItemFromFile(example, tag, folder)
+if item then
+    repeat
+        item = XMLParser:RemoveItemFromFile(example, tag, folder)
+    until not item
+end
+XMLParser:closeQueue()
 ```
 
 ## ПОДРОБНЕЕ
