@@ -7,7 +7,7 @@
 --               написанный специально для игры
 --             Ex Machina / Hard Truck Apocalypse
 --
---                     XMLParser v1.0.1
+--                      XMLParser v1.1
 -- 
 -- 
 -- ====================== Автор E Jet =========================
@@ -554,7 +554,7 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "v1.0.1"
+XMLParser.version = "v1.1"
 XMLParser.data = {}
 local PARSER = XMLParser.data
 
