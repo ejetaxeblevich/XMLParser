@@ -140,13 +140,18 @@ end
 Class XMLParser
 {
     /* Основные функции */
-    [M] bool init( const char* path_to_file, const CStr& root_tag_in_file, const CStr& default_file_content, bool LOG )  /* Инициализирует "точку входа" парсера в файле, перезатирает ранее установленные параметры парсера. bool LOG принтит дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
+    [M] bool IsFileExists( const char* path_to_file )    /* Проверяет, существует ли файл по этому пути */
+    [M] bool IsFileOpen( file descryptor )               /* Проверяет, открыт ли файл в памяти по этому дескриптору */
+    [M] bool&descryptor init( const char* path_to_file, const CStr& root_tag_in_file, const CStr& default_file_content, bool LOG )  /* Инициализирует "точку входа" парсера в файле, перезатирает ранее установленные параметры парсера. bool LOG принтит дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
     [M] bool save()      /* Сохраняет в файл все изменения, произведенные парсером */
     [M] bool createFile( const char* path, const CStr& default_file_content )     /* Создает (ПЕРЕЗАТИРАЕТ) файл и записывает в него базовый контент, указанный в default_file_content или в init(). По умолчанию это "data\\gamedata\\file_name.xml" */
     [M] bool removeFile()       /* Удаляет файл, указанный в init(). По умолчанию это "data\\gamedata\\file_name.xml" */
     [M] void AutoUpdateTree( bool Value )       /* Включает/отключает автоматическое обновление дерева TREE при каждом вызове дочерних методов TREE */
     
     /* Универсальные функции */
+    [M] string QuickGet( const char* path_to_file, const char* AttrName )                  /* Возвращает значение атрибута из файла. Работает быстро, возвращает первое совпадение! Не использует кэш и переменные парсера, игнорирует пробелы и табуляцию */
+    [M] bool QuickSet( const char* path_to_file, const char* AttrName, const CStr& AttrValue )  /* Назначает значение атрибута в файле. Работает быстро, редактирует первое совпадение! Не использует кэш и переменные парсера, игнорирует пробелы и табуляцию */
+    [M] string QuickParseLine( const char* path_to_file, const char* LinePattern )         /* Возвращает захваченный паттерн строки из файла. Ищет построчно до первого совпадения, работает с регулярными выражениями */
     [M] bool openQueue( const char* path_to_file )           /* Открывает очередь для команд ниже (и не только), открывает файл и держит его в памяти. Пока открыта очередь, команды парсера будут применяться к файлу по этому пути */
     [M] table GetItemFromFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName )       /* Возвращает XMLParser-объект из выбранного xml файла, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser, однако необходимо уже вручную разбирать возвращаемую таблицу. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится. */
     [M] bool SetItemValueInFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName, const char* AttributeName, const char* Pattern, const CStr& AttributeValue )    /* Изменяет параметр объекта в выбранном xml файле, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится; AttributeName - имя атрибута; Pattern - что нужно найти и заменить. Если nil, будет весь текст атрибута; AttributeValue - на что нужно заменить. Если nil, будет весь текст атрибута. */
@@ -156,6 +161,8 @@ Class XMLParser
     /* Сервисные функции. По возможности не используйте */
     [M] void clearCache()       /* Сбрасывает глобальные переменные парсера в настройки по умолчанию. После этого необходимо снова инициализировать парсер через init() */
     [M] table getCache()        /* Возвращает все глобальные переменные парсера. Индексы переменных можно посмотреть в логе игры, если включен bool LOG в init() */
+    [M] void ConvertPropertiesIn( const char* InputPATH, const char* OutputPATH )    /* Конвертирует значения объектов из файла (dynamicscene, world) в удобные варианты копирования для скриптов в файл OutputPATH, иначе в корень как func_ConvertPropertiesIn.xml. Примеры: rot="0.0004 0.9786 -0.2058 0.0021" --> rot="Quaternion(0.0004, 0.9786, -0.2058, 0.0021)"; Pos="326.145 436.152 2804.116" --> Pos="CVector(326.145, 436.152, 2804.116)" */ 
+    [M] AIParam ReadBinary( const char* path_to_file )       /* Читает бинарные файлы. Возвращает размер файла в байтах, килобайтах и мегабайтах. [.AsHex] - возвращает Hex-содержимое файла, [.AsASCII] - возвращает ASCII-содержимое файла */
     [M] bool AddCommentNearItem( string comment, table itemParams )  /* Добавляет комментарий над элементом. Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команды */
     [M] string GetLineWithContent( int line, string Content )        /* Возвращает строку и ее номер из файла, ищет первое совпадение по Content, если указан (поддержка регулярных выражений). Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команды */
     [M] tuple RemoveLineWithContent( int line, string Content )      /* Удаляет строку в файле (Осторожно! Можно сломать разметку файла!). Возвращает истину, номер строки и само значение строки, в противном случае nil. Ищет первое совпадение по Content, если указан (поддержка регулярных выражений). Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команды */
@@ -177,7 +184,7 @@ Class XMLParser
     {
         [M] TREE Tree( table treeParams ) : public XMLParser     /* Это прямое обращение к дереву TREE. Используйте [XMLParser:Tree( table treeParams ):init()] перед выполнением команд. Во время использования команд аргумент в Tree() не нужен */
         {
-            [M] bool init()      /* Обновляет содержимое TREE, перечитывает xml файл */
+            [M] bool init( table new_treeParams )      /* Обновляет содержимое TREE, захватывает новое дерево если указан new_treeParams */
             [M] bool IsObjectExists( table ObjectTagXorCustomKey, string CustomKeyValue )      /* Проверяет, существует ли такой объект в дереве: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
             [M] bool IsTreeExists( table TreeTagXorCustomKey, string CustomKeyValue )          /* Проверяет, существует ли такое дерево в дереве: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
             [M] bool CaptureInnerTree( table TreeTagXorCustomKey, string CustomKeyValue )      /* Помещает найденное дерево внутри дерева в TREE (новое дерево становится активным). Пользовательские ключи задаются в PARSER.KEYS */
@@ -217,7 +224,7 @@ Class XMLParser
 
             Class OBJ
             {
-                [M] OBJ GetObj( table ObjectTagXorCustomKey, string CustomKeyValue ) : public Tree       /* Это прямое обращение к объекту OBJ: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
+                [M] OBJ GetObj( table ObjectTagXorCustomKey, string CustomKeyValue ) : public TREE       /* Это прямое обращение к объекту OBJ: [{"TagName", "Name"}, "bibka"]. Пользовательские ключи задаются в PARSER.KEYS */
                 {
                     [M] string GetName()         /* Возвращает имя тега объекта */
                     [M] string GetObjName()      /* Возвращает Name объекта */
