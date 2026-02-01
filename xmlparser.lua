@@ -7,7 +7,7 @@
 --               написанный специально для игры
 --             Ex Machina / Hard Truck Apocalypse
 --
---                      XMLParser v1.1
+--                     XMLParser v1.1.1
 -- 
 -- 
 -- ====================== Автор E Jet =========================
@@ -233,9 +233,9 @@
 --         [M] void AutoUpdateTree( bool Value )       /* Включает/отключает автоматическое обновление дерева TREE при каждом вызове дочерних методов TREE */
 --         
 --         /* Универсальные функции */
---         [M] string QuickGet( const char* path_to_file, const char* AttrName )                  /* Возвращает значение атрибута из файла. Работает быстро, возвращает первое совпадение! Не использует кэш и переменные парсера, игнорирует пробелы и табуляцию */
---         [M] bool QuickSet( const char* path_to_file, const char* AttrName, const CStr& AttrValue )  /* Назначает значение атрибута в файле. Работает быстро, редактирует первое совпадение! Не использует кэш и переменные парсера, игнорирует пробелы и табуляцию */
---         [M] string QuickParseLine( const char* path_to_file, const char* LinePattern )         /* Возвращает захваченный паттерн строки из файла. Ищет построчно до первого совпадения, работает с регулярными выражениями */
+--         [M] string QuickGet( const char* path_to_file, const char* AttrName )                       /* Возвращает значение атрибута из файла. Работает быстро, возвращает первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию */
+--         [M] bool QuickSet( const char* path_to_file, const char* AttrName, const CStr& AttrValue )  /* Редактирует значение атрибута в файле. Работает быстро, редактирует первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию */
+--         [M] string QuickParseLine( const char* path_to_file, const char* LinePattern )              /* Возвращает захваченный паттерн строки из файла. Ищет построчно до первого совпадения, работает с регулярными выражениями */
 --         [M] bool openQueue( const char* path_to_file )           /* Открывает очередь для команд ниже (и не только), открывает файл и держит его в памяти. Пока открыта очередь, команды парсера будут применяться к файлу по этому пути */
 --         [M] table GetItemFromFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName )       /* Возвращает XMLParser-объект из выбранного xml файла, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser, однако необходимо уже вручную разбирать возвращаемую таблицу. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится. */
 --         [M] bool SetItemValueInFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName, const char* AttributeName, const char* Pattern, const CStr& AttributeValue )    /* Изменяет параметр объекта в выбранном xml файле, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится; AttributeName - имя атрибута; Pattern - что нужно найти и заменить. Если nil, будет весь текст атрибута; AttributeValue - на что нужно заменить. Если nil, будет весь текст атрибута. */
@@ -554,7 +554,7 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "v1.1"
+XMLParser.version = "v1.1.1"
 XMLParser.data = {}
 local PARSER = XMLParser.data
 
@@ -2046,6 +2046,10 @@ function XMLParser:QuickGet(stringPATH, stringAttrName)
 		local data = f:read("*all")
 		f:close()
 		_,_, value = string.find(data, stringAttrName..'%s*=%s*"([^"]*)"')
+        if not value then
+            stringAttrName = '"'..stringAttrName..'"'
+            _,_, value = string.find(data, stringAttrName..'%s*>([^<]*)<')
+        end
         data = nil
 	end
 	return value
@@ -2061,6 +2065,14 @@ function XMLParser:QuickSet(stringPATH, stringAttrName, stringAttrValue)
         local start, finish = string.find(data, stringAttrName..'%s*=%s*"[^"]*"')
         if start then
             data = string.sub(data, 1, start-1) .. stringAttrName..'="'..stringAttrValue..'"' .. string.sub(data, finish+1)
+        else
+            stringAttrName = '"'..stringAttrName..'"'
+            start, finish = string.find(data, stringAttrName..'%s*>[^<]*<')
+            if start then
+                data = string.sub(data, 1, start-1) .. stringAttrName..'>'..stringAttrValue..'<' .. string.sub(data, finish+1)
+            end
+        end
+        if start then
             f = io.open(stringPATH or "data\\config.cfg", "w")
             f:write(data)
             f:close()
