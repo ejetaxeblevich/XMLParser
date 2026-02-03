@@ -141,8 +141,8 @@ Class XMLParser
 {
     /* Основные функции */
     [M] bool IsFileExists( const char* path_to_file )    /* Проверяет, существует ли файл по этому пути */
-    [M] bool IsFileOpen( file descryptor )               /* Проверяет, открыт ли файл в памяти по этому дескриптору */
-    [M] bool&descryptor init( const char* path_to_file, const CStr& root_tag_in_file, const CStr& default_file_content, bool LOG )  /* Инициализирует "точку входа" парсера в файле, перезатирает ранее установленные параметры парсера. bool LOG принтит дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
+    [M] bool IsFileOpen( file descriptor )               /* Проверяет, открыт ли файл в памяти по этому дескриптору */
+    [M] bool&descriptor init( const char* path_to_file, const CStr& root_tag_in_file, const CStr& default_file_content, bool LOG )  /* Инициализирует "точку входа" парсера в файле, перезатирает ранее установленные параметры парсера. bool LOG принтит дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
     [M] bool save()      /* Сохраняет в файл все изменения, произведенные парсером */
     [M] bool createFile( const char* path, const CStr& default_file_content )     /* Создает (ПЕРЕЗАТИРАЕТ) файл и записывает в него базовый контент, указанный в default_file_content или в init(). По умолчанию это "data\\gamedata\\file_name.xml" */
     [M] bool removeFile()       /* Удаляет файл, указанный в init(). По умолчанию это "data\\gamedata\\file_name.xml" */
