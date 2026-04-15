@@ -144,6 +144,10 @@ end
 ```c
 Class XMLParser
 {
+    /* Вывод информации */
+    [M] void PrintTable( table Table, any findLOGvalue )   /* Принтит в лог игры любую таблицу Table в развернутом виде. Очень полезно, если вы не знаете, что за table (XMLParser-объект) возвращает XMLParser. Укажите значение findLOGvalue для его быстрого поиска по файлу в exmachina.log */
+    [M] void LOG( bool )     /* Принтит всю дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
+
     /* Основные функции */
     [M] bool IsFileExists( const char* path_to_file )    /* Проверяет, существует ли файл по этому пути */
     [M] bool IsFileOpen( file descriptor )               /* Проверяет, открыт ли файл в памяти по этому дескриптору */
@@ -157,6 +161,7 @@ Class XMLParser
     [M] string QuickGet( const char* path_to_file, const char* AttrName )                       /* Возвращает значение атрибута из файла. Работает быстро, возвращает первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию */
     [M] bool QuickSet( const char* path_to_file, const char* AttrName, const CStr& AttrValue )  /* Редактирует значение атрибута в файле. Работает быстро, редактирует первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию */
     [M] string QuickParseLine( const char* path_to_file, const char* LinePattern )              /* Возвращает захваченный паттерн строки из файла. Ищет построчно до первого совпадения, работает с регулярными выражениями */
+    [M] table ReadFromBigfile( const char* path_to_file, const char* ItemTagName, const char* AttributeName, const char* AttributeValue, int SkokaItems, int SkokaDepth )    /* Возвращает таблицу всех объектов из файла, имеющих тег ItemTagName и содержащих атрибут AttributeName со значением AttributeValue, их максимальное количество SkokaItems и максимальую глубину парсинга SkokaDepth внутрь деревьев. Собирает все без конкретики, если аргумент nil. Не использует кэш и переменные парсера. Работает на стриминговом принципе за один проход, и это максимальная возможная оптимизация и скорость на lua 5.0 у Ex Machina (тест на dynamicscene из currentmap занял 0.25 секунды) */
     [M] bool openQueue( const char* path_to_file )           /* Открывает очередь для команд ниже (и не только), открывает файл и держит его в памяти. Пока открыта очередь, команды парсера будут применяться к файлу по этому пути */
     [M] table GetItemFromFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName )       /* Возвращает XMLParser-объект из выбранного xml файла, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser, однако необходимо уже вручную разбирать возвращаемую таблицу. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится. */
     [M] bool SetItemValueInFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName, const char* AttributeName, const char* Pattern, const CStr& AttributeValue )    /* Изменяет параметр объекта в выбранном xml файле, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится; AttributeName - имя атрибута; Pattern - что нужно найти и заменить. Если nil, будет весь текст атрибута; AttributeValue - на что нужно заменить. Если nil, будет весь текст атрибута. */
@@ -433,6 +438,8 @@ if item then
 end
 XMLParser:closeQueue()
 ```
+
+- Для получения множества объектов из файла, таких как файл сохранения, стоит использовать `ReadFromBigfile()`.
 
 ## ПОДРОБНЕЕ
 
