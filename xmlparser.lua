@@ -7,7 +7,7 @@
 --               написанный специально для игры
 --             Ex Machina / Hard Truck Apocalypse
 --
---                     XMLParser v1.1.1
+--                     XMLParser v1.2.0
 -- 
 -- 
 -- ====================== Автор E Jet =========================
@@ -201,6 +201,10 @@
 --      Прочтите описание парсера полностью, чтобы лучше понимать, 
 -- что это за парацетамол. Пользуйтесь на здоровье!
 --
+--      За время разработки и обновлений тут уже скопилось
+-- достаточно много функций разной полезности и уровня яндередева,
+-- но тем не менее, некоторые из них всё так же остаются полезными.
+--
 --      Раскомментируйте дерево Class XMLParser, чтобы 
 -- программа, через которую вы это читаете, смогла подсветить 
 -- синтаксис для удобной навигации по функциям. Не забудьте 
@@ -214,33 +218,35 @@
 -- дерева.
 --      Сначала вам следует сделать дерево-подобъект активным.
 --
---      По умолчанию в некоторых командах вместо аргумента [self]
--- указывайте [nil] при вызове.
---
 ---------------------------------------------------------------
 --
 -- c
 -- [[
 --     Class XMLParser
 --     {
+--         /* Вывод информации */
+--         [M] void PrintTable( table Table, any findLOGvalue )   /* Принтит в лог игры любую таблицу Table в развернутом виде. Очень полезно, если вы не знаете, что за table (XMLParser-объект) возвращает XMLParser. Укажите значение findLOGvalue для его быстрого поиска по файлу в exmachina.log */
+--         [M] void LOG( bool )     /* Принтит всю дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
+--
 --         /* Основные функции */
 --         [M] bool IsFileExists( const char* path_to_file )    /* Проверяет, существует ли файл по этому пути */
---         [M] bool IsFileOpen( file descryptor )               /* Проверяет, открыт ли файл в памяти по этому дескриптору */
---         [M] bool&descryptor init( const char* path_to_file, const CStr& root_tag_in_file, const CStr& default_file_content, bool LOG )  /* Инициализирует "точку входа" парсера в файле, перезатирает ранее установленные параметры парсера. bool LOG принтит дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
+--         [M] bool IsFileOpen( file descriptor )               /* Проверяет, открыт ли файл в памяти по этому дескриптору */
+--         [M] bool&descriptor init( const char* path_to_file, const CStr& root_tag_in_file, const CStr& default_file_content, bool LOG )  /* Инициализирует "точку входа" парсера в файле, перезатирает ранее установленные параметры парсера. bool LOG принтит всю дебаг информацию, если нужно отследить, что не нравится парсеру или где он ломается (Внимание! Принтит ОЧЕНЬ много мусора в лог игры и вызывает НАИСИЛЬНЕЙШУЮ утечку памяти) */
 --         [M] bool save()      /* Сохраняет в файл все изменения, произведенные парсером */
 --         [M] bool createFile( const char* path, const CStr& default_file_content )     /* Создает (ПЕРЕЗАТИРАЕТ) файл и записывает в него базовый контент, указанный в default_file_content или в init(). По умолчанию это "data\\gamedata\\file_name.xml" */
 --         [M] bool removeFile()       /* Удаляет файл, указанный в init(). По умолчанию это "data\\gamedata\\file_name.xml" */
 --         [M] void AutoUpdateTree( bool Value )       /* Включает/отключает автоматическое обновление дерева TREE при каждом вызове дочерних методов TREE */
 --         
 --         /* Универсальные функции */
---         [M] string QuickGet( const char* path_to_file, const char* AttrName )                       /* Возвращает значение атрибута из файла. Работает быстро, возвращает первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию */
+--         [M] string QuickGet( const char* path_to_file, const char* AttrName )                       /* Возвращает значение атрибута из файла. Работает быстро, возвращает первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию. Имеются интерпретации значения: [.AsInt] - возвращает целое число, [.AsString] - возвращает строку, [.AsFloat] - возвращает число с запятой, [.AsBoolean] - возвращает логическое значение, [.AsRUchars] - возвращает строку с переведенными английскими буквами на русские буквы, [.AsENchars] - возвращает строку с переведенными русскими буквами на английские буквы */
 --         [M] bool QuickSet( const char* path_to_file, const char* AttrName, const CStr& AttrValue )  /* Редактирует значение атрибута в файле. Работает быстро, редактирует первое совпадение! Не использует кэш и переменные парсера. Игнорирует деревья и объекты, пробелы и табуляцию */
 --         [M] string QuickParseLine( const char* path_to_file, const char* LinePattern )              /* Возвращает захваченный паттерн строки из файла. Ищет построчно до первого совпадения, работает с регулярными выражениями */
+--         [M] table ReadFromBigfile( const char* path_to_file, const char* ItemTagName, const char* AttributeName, const char* AttributeValue, int SkokaItems, int SkokaDepth )    /* Возвращает таблицу всех объектов из файла, имеющих тег ItemTagName и содержащих атрибут AttributeName со значением AttributeValue, их максимальное количество SkokaItems и максимальую глубину парсинга SkokaDepth внутрь деревьев. Собирает все без конкретики, если аргумент nil. Не использует кэш и переменные парсера. Работает на стриминговом принципе за один проход, и это максимальная возможная оптимизация и скорость на lua 5.0 у Ex Machina (тест на dynamicscene из currentmap занял 0.25 секунды) */
 --         [M] bool openQueue( const char* path_to_file )           /* Открывает очередь для команд ниже (и не только), открывает файл и держит его в памяти. Пока открыта очередь, команды парсера будут применяться к файлу по этому пути */
 --         [M] table GetItemFromFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName )       /* Возвращает XMLParser-объект из выбранного xml файла, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser, однако необходимо уже вручную разбирать возвращаемую таблицу. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится. */
 --         [M] bool SetItemValueInFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName, const char* AttributeName, const char* Pattern, const CStr& AttributeValue )    /* Изменяет параметр объекта в выбранном xml файле, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится; AttributeName - имя атрибута; Pattern - что нужно найти и заменить. Если nil, будет весь текст атрибута; AttributeValue - на что нужно заменить. Если nil, будет весь текст атрибута. */
 --         [M] bool RemoveItemFromFile( string FindExample, const char* ItemTagName, const char* ItemRepositoryName )     /* Удаляет найденный XMLParser-объект из выбранного xml файла, используется без init(). Не нагружает игру как простое чтение XMLParser через init() у большого файла. Очень полезно для чтения огромных файлов (таких как dialogsglobal.xml или currentmap.xml) а также более "шелкового касания" объекта, нежели как это делает автоматически XMLParser, однако необходимо уже вручную разбирать возвращаемую таблицу. Аргументы: FindExample - образец строки для первичного поиска. Указывается один из атрибутов объекта, например имя: 'name="object_name"'; ItemTagName - имя открывающего тега этого объекта; ItemRepositoryName - имя открывающего/закрывающего тега дерева, где этот объект находится. */
---         [M] bool closeQueue( table content, file descryptor )    /* Закрывает очередь для команд выше (и не только), закрывает файл и сохраняет изменения в нем. Не указывайте аргументы для работы с текущим открытым файлом */
+--         [M] bool closeQueue( table content, file descriptor )    /* Закрывает очередь для команд выше (и не только), закрывает файл и сохраняет изменения в нем. Не указывайте аргументы для работы с текущим открытым файлом */
 --     
 --         /* Сервисные функции. По возможности не используйте */
 --         [M] void clearCache()       /* Сбрасывает глобальные переменные парсера в настройки по умолчанию. После этого необходимо снова инициализировать парсер через init() */
@@ -330,22 +336,22 @@
 --        {
 --            [M] TRIGGER trigger( string TriggerName ) : public XMLParser     /* Это прямое обращение к триггеру TRIGGER. Используйте [XMLParser:init()] перед выполнением команд */
 --            {
---                [M] bool Add( self, int Active, table Events, table Script)      /* Добавляет триггер с именем TriggerName, ивентами Events и скриптом Script. Events и Script это таблицы, содержащие отдельные строки, где каждая строка это строка скрипта/объекта ивента */
+--                [M] bool Add( int Active, table Events, table Script)      /* Добавляет триггер с именем TriggerName, ивентами Events и скриптом Script. Events и Script это таблицы, содержащие отдельные строки, где каждая строка это строка скрипта/объекта ивента */
 --                [M] bool Remove()        /* Удаляет триггер с именем TriggerName */
 --                [M] bool DoScript()      /* Безопасно выполняет скрипт триггера. Возвращает вторым значением ошибку в противном случае. Глобальные игровые методы trigger недоступны - пожалуйста, откажитесь от методов или переопределяйте trigger внутри скрипта триггера, чтобы DoScript() выполнился корректно. В противном случае в скрипте триггера есть ошибка. Помните, что манипулирование объектами на других картах извне невозможно */
 --                [M] bool IsActive()      /* Возвращает состояние триггера */
 --                [M] bool SetActive( bool Active )     /* Назначает состояние триггера */
 --                [M] string GetBody()     /* Возвращает скрипт триггера как строку */
 --                [M] table GetScript()    /* Возвращает скрипт триггера как строковую таблицу */
---                [M] string GetScriptByLine( self, int Line )            /* Возвращает строку скрипта триггера по номеру строки (относительно) */
---                [M] int GetLineByScriptContent( self, string Content )  /* Возвращает номер строки скрипта триггера по содержимому строки (относительно) */
---                [M] bool ReplaceScript( self, string NewScript )        /* Заменяет скрипт триггера новым скриптом [[]] */
---                [M] bool AddScript( self, string Script, int Line )     /* Добавляет новую часть скрипта в триггер с позицией Line, иначе в конец триггера */
+--                [M] string GetScriptByLine( int Line )            /* Возвращает строку скрипта триггера по номеру строки (относительно) */
+--                [M] int GetLineByScriptContent( string Content )  /* Возвращает номер строки скрипта триггера по содержимому строки (относительно) */
+--                [M] bool ReplaceScript( string NewScript )        /* Заменяет скрипт триггера новым скриптом [[]] */
+--                [M] bool AddScript( string Script, int Line )     /* Добавляет новую часть скрипта в триггер с позицией Line, иначе в конец триггера */
 --                [M] void RemoveScript()     /* Удаляет скрипт триггера */
---                [M] bool RemoveScriptLine( self, int Line or string Content )     /* Удаляет строку скрипта триггера по номеру строки или по содержимому (относительно) */
+--                [M] bool RemoveScriptLine( int Line or string Content )     /* Удаляет строку скрипта триггера по номеру строки или по содержимому (относительно) */
 --                [M] table GetAllEvents()    /* Возвращает все ивенты триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
---                [M] event[table] GetEventById( self, const char* EventId )                        /* Возвращает ивент триггера по имени eventid. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
---                [M] event[table] GetEventByKey( self, const char* EventKey, string EventValue )   /* Возвращает ивент триггера по ключу ивента и его значению. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--                [M] event[table] GetEventById( const char* EventId )                        /* Возвращает ивент триггера по имени eventid. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+--                [M] event[table] GetEventByKey( const char* EventKey, string EventValue )   /* Возвращает ивент триггера по ключу ивента и его значению. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
 --                [M] bool AddEvent( table event )        /* Добавляет новый ивент в триггер. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
 --                [M] bool RemoveEvent( table event )     /* Удаляет ивент из триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
 --            }
@@ -355,7 +361,7 @@
 --
 ---------------------------------------------------------------
 --
---------------- \/ Пример использования методов \/ -------------
+--------------- \/ Пример использования методов \/ ------------
 --
 -- lua
 -- [[
@@ -427,7 +433,7 @@
 --
 ---------------------------------------------------------------
 --
----------------------- Что такое "поле текста" ---------------------
+------------------- Что такое "поле текста" -------------------
 --
 -- Class TREE команды.
 --
@@ -525,8 +531,13 @@
 --	  end
 --    XMLParser:closeQueue()
 -- ]]
--- 
+--
 ---------------------------------------------------------------
+--
+--      Для получения множества объектов из файла, таких как файл
+-- сохранения, стоит использовать [ReadFromBigfile()].
+-- 
+-- ============================================================
 --
 -- ======================= ПОДРОБНЕЕ ==========================
 --
@@ -554,9 +565,27 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "v1.1.1"
+XMLParser.version = "v1.2.0"
 XMLParser.data = {}
 local PARSER = XMLParser.data
+
+local str_find = strfind or string.find
+local str_sub = strsub or string.sub
+local str_gsub = strgsub or string.gsub
+local str_rep = strrep or string.rep
+local str_len = strlen or string.len
+local str_low = strlower or string.lower
+local str_byte = strbyte or string.byte
+local str_char = strchar or string.char
+
+local t_insert = tinsert or table.insert
+local t_remove = tremove or table.remove
+local t_concat = tconcat or table.concat
+local t_getn = tgetn or table.getn
+
+local io_open = iopen or io.open
+local io_lines = ilines or io.lines
+
 
 LOG("[I] Init Module XMLParser.lua ...")
 
@@ -574,7 +603,10 @@ PARSER.KEYS_TriggerEvent = {"eventid", "timeout", "ObjName", "msgid", "flypath"}
 PARSER.KEYS_SearchingGradient = {"Name", "name", "ObjectId", "Id", "id", "field", "_customValue"}
 PARSER.KEYS_PriorityGradient = {"ObjectId", "Id", "id", "Name", "name", "field", "Value", "ListOfItems", "Chassis", "Cabin", "Cargo", "Skin", "ListOfGuns", "Status", "Item", "Amount", "Maximum", "Description", "Difficulty", "Done"}
 
-PARSER.KEYS_FORBIDDEN = {_itemClass=1, _itemLine=1, _itemParent=1, _itemProperties=1, _itemTag=1}
+PARSER.KEYS_FORBIDDEN = {_itemClass=1, _itemLine=1, _itemParent=1, _itemProperties=1, _itemTag=1, _itemTarget=1}
+
+
+PARSER.IGNORE_ParseLines = {['<Runtime />']=1}
 
 
 -- ////////////////////////// DEFAULT MODULE ITEMS //////////////////////////
@@ -631,9 +663,9 @@ local function parserLOG(...)
             if arg[i+1] then
                 v = tostring(v).."\t"
             end
-            table.insert(logstr, tostring(v))
+            t_insert(logstr, tostring(v))
         end
-        LOG("[XMLParserLOG]: "..table.concat(logstr))
+        LOG("[XMLParserLOG]: "..t_concat(logstr))
     end
 end
 local function parserPRINT(...)
@@ -643,9 +675,9 @@ local function parserPRINT(...)
             if arg[i+1] then
                 v = tostring(v).."\t"
             end
-            table.insert(printstr, tostring(v))
+            t_insert(printstr, tostring(v))
         end
-        println("[XMLParserPRINT]: "..table.concat(printstr))
+        println("[XMLParserPRINT]: "..t_concat(printstr))
     end
 end
 
@@ -659,9 +691,9 @@ local function _TableToString(tbl, indent)
     local result = ""
     for key, value in pairs(tbl) do
         if type(value) == "table" then
-            result = result .. string.rep(" ", indent) .. key .. " = {\n" .. _TableToString(value, indent + 4) .. string.rep(" ", indent) .. "}\n"
+            result = result .. str_rep(" ", indent) .. key .. " = {\n" .. _TableToString(value, indent + 4) .. str_rep(" ", indent) .. "}\n"
         else
-            result = result .. string.rep(" ", indent) .. key .. " = \"" .. tostring(value) .. "\"\n"
+            result = result .. str_rep(" ", indent) .. key .. " = \"" .. tostring(value) .. "\"\n"
         end
     end
     return result
@@ -686,7 +718,7 @@ function XMLParser:clearCache()
     PARSER.ENTERS = false
     PARSER.SPACES = false
 
-    PARSER.OPENEDFILEDESCRYPTOR = nil
+    PARSER.OPENEDFILEDESCRIPTOR = nil
     PARSER.AUTOUPDATE = false
     PARSER.TREEDATA = {}
     PARSER.TREEPARAMS = {}
@@ -701,7 +733,6 @@ end
 XMLParser:clearCache()
 
 
-
 function XMLParser:getCache()
     parserLOG(":::: global method XMLParser:getCache ::::")
 
@@ -710,7 +741,7 @@ function XMLParser:getCache()
     local cache = {}
     for k,v in pairs(PARSER) do
         LOG("[I] ["..i.."] PARSER."..tostring(k).." is {"..tostring(v).."}")
-        table.insert(cache, v)
+        t_insert(cache, v)
         i=i+1
     end
 
@@ -719,6 +750,15 @@ function XMLParser:getCache()
     return cache
 end
 
+
+function XMLParser:LOG(bool)
+    if bool then
+        PARSER.LOG = true
+    else
+        PARSER.LOG = false
+    end
+    parserLOG(":::: global method XMLParser:LOG ::::")
+end
 
 
 -- ///////////////////////////// LOCAL FUNCTIONS ////////////////////////////
@@ -747,8 +787,8 @@ local function TranslateRUCharsToENChars(text)
 
     local result = ''
 
-    for i = 1, string.len(text) do
-        local char = string.sub(text, i, i)
+    for i = 1, str_len(text) do
+        local char = str_sub(text, i, i)
         if translitTable[char] then
             result = result .. translitTable[char]
         else
@@ -784,15 +824,15 @@ local function TranslateENCharsToRUChars(text)
 
     local i = 1
 
-    while i <= string.len(text) do
-        local twoChar = string.sub(text, i, i + 1)
-        local twoCharLower = string.lower(twoChar)
+    while i <= str_len(text) do
+        local twoChar = str_sub(text, i, i + 1)
+        local twoCharLower = str_low(twoChar)
         if reverseTranslitTable[twoCharLower] then
             result = result .. reverseTranslitTable[twoCharLower]
             i = i + 2
         else
-            local oneChar = string.sub(text, i, i)
-            local oneCharLower = string.lower(oneChar)
+            local oneChar = str_sub(text, i, i)
+            local oneCharLower = str_low(oneChar)
             if reverseTranslitTable[oneCharLower] then
                 result = result .. reverseTranslitTable[oneCharLower]
             else
@@ -806,9 +846,14 @@ local function TranslateENCharsToRUChars(text)
 end
 
 
+local function string_strip(str)
+	return str_gsub(str, "^%s*(.-)%s*$", "%1")
+end
+
+
 local function is_file_exists(path)
     local b = false
-	local f = io.open(path, 'r')
+	local f = io_open(path, 'r')
 	if f then
 		b = true
 		f:close()
@@ -825,35 +870,64 @@ local function is_file_open(f)
     return ok
 end
 
-local function array_equal(t1, t2)
-    if getn(t1) ~= getn(t2) then return false end
-    for i = 1, getn(t1) do
+
+
+
+
+
+local function table_equal(t1, t2)
+    if t_getn(t1) ~= t_getn(t2) then return false end
+    for i = 1, t_getn(t1) do
         if t1[i] ~= t2[i] then return false end
     end
     return true
 end
 
-local function update_array_ordered(new_array)
-    local new_len = getn(new_array)
+local function table_copy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[table_copy(orig_key)] = table_copy(orig_value)
+        end
+        setmetatable(copy, table_copy(getmetatable(orig)))
+    else
+        copy = orig
+    end
+    return copy
+end
+
+local function is_table_contains(tbl, value)
+    for _, v in ipairs(tbl) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
+local function is_table_empty(tbl)
+    return next(tbl) == nil
+end
+
+
+
+local function array_update_ordered(new_array)
+    parserLOG(":::: local function array_update_ordered ::::")
+    local new_len = t_getn(new_array)
     local result = PARSER.CACHEDFILEDATA
     local i = 1
-
     if not result then
         return nil
     end
-
-    --перебираем new_array и ставим элементы на соответствующие позиции в result
+    
     while i <= new_len do
         if result[i] == new_array[i] then
-            --элемент совпадает - идем дальше
             i = i + 1
         else
-            --если в result элемент другой, ищем нужный в остатке и переставляем,
-            --либо вставляем новый
-
-            --пытаемся найти new_array[i] в result дальше
             local found_pos = nil
-            for j = i + 1, getn(result) do
+            for j = i + 1, t_getn(result) do
                 if result[j] == new_array[i] then
                     found_pos = j
                     break
@@ -861,13 +935,11 @@ local function update_array_ordered(new_array)
             end
 
             if found_pos then
-                --удаляем элемент с позиции found_pos и вставляем на i
-                local val = table.remove(result, found_pos)
-                table.insert(result, i, val)
+                local val = t_remove(result, found_pos)
+                t_insert(result, i, val)
                 i = i + 1
             else
-                --элемента нет, вставляем новый
-                table.insert(result, i, new_array[i])
+                t_insert(result, i, new_array[i])
                 i = i + 1
             end
         end
@@ -875,15 +947,15 @@ local function update_array_ordered(new_array)
 
     parserLOG("compile")
 
-    --удаляем лишние элементы в конце result
-    while getn(result) > new_len do
-        table.remove(result)
+    while t_getn(result) > new_len do
+        t_remove(result)
     end
 
     PARSER.CACHEDFILEDATA = result
 
     return result
 end
+
 
 
 local function GetRootTagInFile(content, root_tag_in_file)
@@ -893,8 +965,8 @@ local function GetRootTagInFile(content, root_tag_in_file)
 
     PARSER.CACHEDFILEDATA = content
 
-    local fast_content = table.concat(content)
-    if (string.find(fast_content, "<"..root_tag_in_file..">?")) and (string.find(fast_content, "</"..root_tag_in_file..">")) then
+    local fast_content = t_concat(content)
+    if (str_find(fast_content, "<"..root_tag_in_file..">?")) and (str_find(fast_content, "</"..root_tag_in_file..">")) then
         return true, file
     end
 
@@ -927,7 +999,7 @@ end
 
 local function CollectContentTable(new_content)
     parserLOG(":::: local function CollectContentTable ::::")
-    return update_array_ordered(new_content)
+    return array_update_ordered(new_content)
 end
 
 
@@ -939,14 +1011,14 @@ local function WriteXMLParserFileForTable(content)
     end
     local path_to_file = PARSER.PATH
 
-    local file = PARSER.OPENEDFILEDESCRYPTOR
+    local file = PARSER.OPENEDFILEDESCRIPTOR
     pcall(function() return file:close() end)
 
-    file = io.open(path_to_file, "w")
-    PARSER.OPENEDFILEDESCRYPTOR = file
+    file = io_open(path_to_file, "w")
+    PARSER.OPENEDFILEDESCRIPTOR = file
 
     if not file then
-        PARSER.OPENEDFILEDESCRYPTOR = nil
+        PARSER.OPENEDFILEDESCRIPTOR = nil
         return nil
     end
 
@@ -958,7 +1030,7 @@ local function WriteXMLParserFileForTable(content)
     end
     file:close()
 
-    PARSER.OPENEDFILEDESCRYPTOR = nil
+    PARSER.OPENEDFILEDESCRIPTOR = nil
     PARSER.CACHEDFILEDATA = nil
 
     parserLOG("writttt")
@@ -974,7 +1046,7 @@ local function PackStringFromTable(tbl, bRemoveTABS)
     if type(tbl)=="table" then 
         for i, v in ipairs(tbl) do
             if i==1 then
-                local _,_,savedTabsssss = string.find(v, "(\t*)")
+                local _,_,savedTabsssss = str_find(v, "(\t*)")
                 if savedTabsssss then savedTabs = savedTabsssss end
                 retVal = retVal .. "" .. v
             else
@@ -985,7 +1057,7 @@ local function PackStringFromTable(tbl, bRemoveTABS)
         return tostring(tbl) 
     end
     if bRemoveTABS then
-        retVal = string.gsub(retVal, "[\t*]", "")
+        retVal = str_gsub(retVal, "[\t*]", "")
     end
     retVal = savedTabs..retVal
     return retVal
@@ -995,10 +1067,10 @@ end
 local function PackTableFromString(input_string)
     local result = {}
     local start = 1
-    while start <= string.len(input_string) do
-        local _, next_pos, line = string.find(input_string, "([^\n]*)\n?", start)
+    while start <= str_len(input_string) do
+        local _, next_pos, line = str_find(input_string, "([^\n]*)\n?", start)
         if line then
-            table.insert(result, line)
+            t_insert(result, line)
             start = next_pos + 1
         else
             break
@@ -1027,44 +1099,44 @@ local function UnwrapItemForCommentLines(comment)
     local findParamPattern = '[^<\t]*%s*=+%s*"[^"]*"'
 
     local savedTabs = ""
-    local _, _, savedTabss = string.find(comment, "(\t*)<")
+    local _, _, savedTabss = str_find(comment, "(\t*)<")
     if savedTabss then
         savedTabs = savedTabss
     end
     
     local comment = comment or commentExample
 
-    comment = string.gsub(comment, '<([%w]*)%s+', '<%1\n')
-    comment = string.gsub(comment, '"%s+', '"\n')
-    comment = string.gsub(comment, '</([.]*)', '\n</%1')
-    comment = string.gsub(comment, '>[^<]*<([.]*)', '>\n'..savedTabs..'\t<%1')
-    comment = string.gsub(comment, '\n%s*/>', ' />')
+    comment = str_gsub(comment, '<([%w]*)%s+', '<%1\n')
+    comment = str_gsub(comment, '"%s+', '"\n')
+    comment = str_gsub(comment, '</([.]*)', '\n</%1')
+    comment = str_gsub(comment, '>[^<]*<([.]*)', '>\n'..savedTabs..'\t<%1')
+    comment = str_gsub(comment, '\n%s*/>', ' />')
     
     local lines = {}
     local start_pos = 1
 
     while true do
-        local end_pos = string.find(comment, "\n", start_pos)
+        local end_pos = str_find(comment, "\n", start_pos)
         if not end_pos then
             break
         end
-        local line = string.sub(comment, start_pos, end_pos - 1)
+        local line = str_sub(comment, start_pos, end_pos - 1)
         line = ""..line
         if lines[1] then
             line = savedTabs.."\t"..line
         end
-        table.insert(lines, line)
+        t_insert(lines, line)
         start_pos = end_pos + 1
     end
 
-    if start_pos <= string.len(comment) then
-        local last_line = string.sub(comment, start_pos)
+    if start_pos <= str_len(comment) then
+        local last_line = str_sub(comment, start_pos)
         if lines[1] then
             last_line = savedTabs.."\t"..last_line
         else
             last_line = ""..last_line
         end
-        table.insert(lines, last_line)
+        t_insert(lines, last_line)
     end
 
     return lines
@@ -1088,27 +1160,27 @@ local function SliceParamsForCommentLines(comment)
     
     local comment = comment or commentExample
 
-    comment = string.gsub(comment, '"%s+', '",\n')
-    comment = string.gsub(comment, '[\t*]', '')
+    comment = str_gsub(comment, '"%s+', '",\n')
+    comment = str_gsub(comment, '[\t*]', '')
     
     local lines = {}
     local start_pos = 1
 
     while true do
-        local end_pos = string.find(comment, "\n", start_pos)
+        local end_pos = str_find(comment, "\n", start_pos)
         if not end_pos then
             break
         end
-        local line = string.sub(comment, start_pos, end_pos - 1)
+        local line = str_sub(comment, start_pos, end_pos - 1)
         line = " "..line
-        table.insert(lines, line)
+        t_insert(lines, line)
         start_pos = end_pos + 1
     end
 
-    if start_pos <= string.len(comment) then
-        local last_line = string.sub(comment, start_pos)
+    if start_pos <= str_len(comment) then
+        local last_line = str_sub(comment, start_pos)
         last_line = " "..last_line
-        table.insert(lines, last_line)
+        t_insert(lines, last_line)
     end
 
     return lines
@@ -1119,7 +1191,7 @@ local function getLineNumberFromSymbolPosition(content, charPosition)
     parserLOG(":::: local function getLineNumberFromSymbolPosition ::::")
     local lineNumber = 1
     for i = 1, charPosition do
-        if string.sub(content, i, i) == "\n" then
+        if str_sub(content, i, i) == "\n" then
             lineNumber = lineNumber + 1
         end
     end
@@ -1143,44 +1215,63 @@ local function CheckXMLParserFileForTree(treeParams, bNotReturnContent)
     end
 
     local content = PARSER.CACHEDFILEDATA or PARSER.FILEDATA or {}
-    local fast_content = table.concat(content)
+    local fast_content = t_concat(content)
 
-    if not (string.find(fast_content, "<"..tree_name.."(\n*)")) or not (string.find(fast_content, "</"..tree_name..">")) then
+    if not (str_find(fast_content, "<"..tree_name.."(\n*)")) or not (str_find(fast_content, "</"..tree_name..">")) then
         LOG("[E] Module XMLParser.lua === Tree <"..tree_name.."> in '"..PARSER.PATH.."' not found")
         parserPRINT("Tree <"..tree_name.."> in '"..PARSER.PATH.."' not found")
         return nil
     end
 
     local firstLine, lastLine = 0, 0
+    local tabs, boolfndTag = "", false
     for i, value in ipairs(content) do
-        if string.find(value, "<"..tree_name) then
-            firstLine = i+1
-        elseif string.find(value, "</"..tree_name..">") then
-            lastLine = i+1
-            break
+        if not boolfndTag and str_find(value, "<"..tree_name) then
+            _,_, tabs = str_find(value, '(\t*)<')
+            tabs = tabs or ""
+            boolfndTag = true
+            firstLine = i
+        elseif boolfndTag then 
+            lastLine = i
+            if str_find(value, tabs.."</"..tree_name..">") then
+                break
+            end
         end
     end
 
-    if (tree_objName) and (tree_objName~="") then
-        parserLOG("\\\\ "..tree_objName)
-        --local gdeStart, gdeEnd, fnd_tree_objName = string.find(fast_content, "<"..tree_name..'[^>]*'..tostring(tree_key)..'%s*=%s*"'..tree_objName..'"')
-        local gdeStart, gdeEnd = string.find(fast_content, '<'..tree_name..'[^<]*=%s*"'..tree_objName..'"[^>]*>')
-        parserLOG(gdeStart, gdeEnd, tree_name, tree_objName)
-        if gdeStart then
-            local ankerTree = string.sub(fast_content, gdeStart, gdeEnd)
-            parserLOG("{"..ankerTree.."}")
-            firstLine = getLineNumberFromSymbolPosition(fast_content, gdeStart)
-            lastLine = firstLine
-            while string.find(content[lastLine], "</"..tree_name..">")==nil do
-                --parserLOG("<> "..content[lastLine])
-                lastLine = lastLine + 1
-            end
-            parserLOG(">>> "..content[firstLine])
-            parserLOG(">>> "..content[lastLine])
-            parserLOG("[I] Module XMLParser.lua === Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
-            parserPRINT("Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
-        end
+    if firstLine==0 or (lastLine==t_getn(content) and not str_find(content[lastLine], tree_name)) then
+        LOG("[E] Module XMLParser.lua === Tree <"..tree_name.."> in '"..PARSER.PATH.."' not found")
+        parserPRINT("Tree <"..tree_name.."> in '"..PARSER.PATH.."' not found")
+        return nil
     end
+
+    -- if (tree_objName) and (tree_objName~="") then
+    --     parserLOG("\\\\ "..tree_objName)
+    --     --local gdeStart, gdeEnd, fnd_tree_objName = str_find(fast_content, "<"..tree_name..'[^>]*'..tostring(tree_key)..'%s*=%s*"'..tree_objName..'"')
+    --     local gdeStart, gdeEnd = str_find(fast_content, '<'..tree_name..'[^<]*=%s*"'..tree_objName..'"[^>]*>')
+    --     parserLOG(gdeStart, gdeEnd, tree_name, tree_objName)
+    --     if gdeStart then
+    --         local ankerTree = str_sub(fast_content, gdeStart, gdeEnd)
+    --         parserLOG("{"..ankerTree.."}")
+    --         firstLine = getLineNumberFromSymbolPosition(fast_content, gdeStart)
+    --         lastLine = firstLine
+    --         while str_find(content[lastLine], "</"..tree_name..">")==nil do
+    --             --parserLOG("<> "..content[lastLine])
+    --             lastLine = lastLine + 1
+    --         end
+    --         parserLOG(">>> "..content[firstLine])
+    --         parserLOG(">>> "..content[lastLine])
+    --         parserLOG("[I] Module XMLParser.lua === Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
+    --         parserPRINT("Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..tree_objName.."\", "..gdeStart..";"..gdeEnd)
+    --     end
+    -- end
+
+    parserLOG("\\\\ "..(tree_objName or tree_name))
+    parserLOG("tree_firstLine >>> "..content[firstLine])
+    parserLOG("tree_lastLine  >>> "..content[lastLine])
+    parserLOG("[I] Module XMLParser.lua === Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..(tree_objName or tree_name).."\"")
+    parserPRINT("Finded tree <"..tree_name.."> in '"..PARSER.PATH.."' with name \""..(tree_objName or tree_name).."\"")
+
 
     if bNotReturnContent then
         content = nil
@@ -1291,24 +1382,6 @@ end
 
 
 
-local function _CopyTable(orig)
-    parserLOG(":::: local function _CopyTable ::::")
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[_CopyTable(orig_key)] = _CopyTable(orig_value)
-        end
-        setmetatable(copy, _CopyTable(getmetatable(orig)))
-    else
-        copy = orig
-    end
-    return copy
-end
-
-
-
 local function _INTERPRETATION(Value)
     parserLOG(":::: local function _INTERPRETATION ::::")
     local interpreters = {
@@ -1374,18 +1447,6 @@ local function _INTERPRETATION(Value)
 end
 
 
-local function ____table_contains(tbl, value)
-    parserLOG(":::: local function ____table_contains ::::")
-    for _, v in ipairs(tbl) do
-        if v == value then
-            return true
-        end
-    end
-    return false
-end
-
-
-
 
 -- ///////////////////////////////////////////////////////////////////////////////
 
@@ -1394,15 +1455,31 @@ end
 -- ///////////////////////////////////////////////////////////////////////////////
 
 
+function XMLParser:PrintTable(tbl, findLOGvalue)
+    parserLOG(":::: global method XMLParser:PrintTable ::::")
+    local findLOGvalue = findLOGvalue or "[I] Module XMLParser.lua === PrintTable():"
+    LOG(tostring(findLOGvalue).."\n".._TableToString(tbl))
+end
+
 
 function XMLParser:IsFileExists(path_to_file)
     parserLOG(":::: global method XMLParser:IsFileExists ::::")
     return is_file_exists(path_to_file)
 end
 
-function XMLParser:IsFileOpen(fileDescryptor)
+function XMLParser:IsFileOpen(fileDescriptor)
     parserLOG(":::: global method XMLParser:IsFileOpen ::::")
-    return is_file_open(fileDescryptor)
+    return is_file_open(fileDescriptor)
+end
+
+function XMLParser:ReadFile(path_to_file)
+    parserLOG(":::: global method XMLParser:ReadFile ::::")
+    local data
+    local f = io_open(path_to_file, 'r')
+    if f then
+        data = f:read("*all")
+    end
+    return data
 end
     
 
@@ -1413,10 +1490,10 @@ function XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bL
     local default_file_content = default_file_content or PARSER.XML
     local root_tag_in_file = root_tag_in_file or PARSER.ROOT
 
-    local file = PARSER.OPENEDFILEDESCRYPTOR
+    local file = PARSER.OPENEDFILEDESCRIPTOR
     if is_file_open(file) then
         pcall(function() return file:close() end)
-        PARSER.OPENEDFILEDESCRYPTOR = nil
+        PARSER.OPENEDFILEDESCRIPTOR = nil
     end
 
     local content = XMLParser:openQueue(path_to_file)
@@ -1425,7 +1502,7 @@ function XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bL
         println("[E] Module XMLParser.lua === File '"..tostring(path_to_file).."' does not exists!")
         return nil
     end
-    file = PARSER.OPENEDFILEDESCRYPTOR
+    file = PARSER.OPENEDFILEDESCRIPTOR
 
     if bLog then
         PARSER.LOG = true
@@ -1460,9 +1537,9 @@ end
 function XMLParser:createFile(path, default_file_content)
     parserLOG(":::: global method XMLParser:createFile ::::")
     local path = path or PARSER.PATH
-    local file = io.open(path, "r")
+    local file = io_open(path, "r")
     if not file then
-        file = io.open(path, "w")
+        file = io_open(path, "w")
         local default_file_content = default_file_content or PARSER.XML
         if default_file_content then PARSER.XML = default_file_content end
         file:write(PARSER.XML)
@@ -1478,7 +1555,7 @@ end
 function XMLParser:removeFile()
     parserLOG(":::: global method XMLParser:removeFile ::::")
     local path = PARSER.PATH
-    local file = io.open(path, "r")
+    local file = io_open(path, "r")
     if file then
         file:close()
         file = nil
@@ -1516,7 +1593,7 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
         return nil
     end
 
-    -- if (string.find(fast_content, "<"..tostring(treeParams["_itemTag"]).."(\n*)")) or (string.find(fast_content, "</"..tostring(treeParams["_itemTag"])..">")) then
+    -- if (str_find(fast_content, "<"..tostring(treeParams["_itemTag"]).."(\n*)")) or (str_find(fast_content, "</"..tostring(treeParams["_itemTag"])..">")) then
     --     parserLOG("[E] Module XMLParser.lua === Tree with name \""..tostring(treeParams["_itemTag"]).."\" in '"..PARSER.PATH.."' already exists")
     --     parserPRINT("XMLParser: Tree with name \""..tostring(treeParams["_itemTag"]).."\" in '"..PARSER.PATH.."' already exists")
     --     return nil
@@ -1526,15 +1603,15 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     firstLine = put_inParams["_itemLine"] or firstLine
 
     local savedTabs = ""
-    local _, _, savedTabss = string.find(content[firstLine], "(\t*)")
+    local _, _, savedTabss = str_find(content[firstLine], "(\t*)")
     if savedTabss then
         savedTabs = savedTabss
     end
 
-    if not string.find(content[firstLine], ">") then
+    if not str_find(content[firstLine], ">") then
         repeat
             firstLine=firstLine+1
-        until string.find(content[firstLine], ">")
+        until str_find(content[firstLine], ">")
     end
 
     firstLine = firstLine + 1
@@ -1542,11 +1619,11 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     local curLine = firstLine
     local genTree_upTag = savedTabs.."\t<"..tostring(treeParams["_itemTag"])
     -- if PARSER.ENTERS then
-    --     if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], '"%s*>')) or (string.find(content[firstLine], '<[^>]>?')) then
+    --     if (str_find(content[firstLine-1], "</[^>]>")) or (not str_find(content[firstLine-1], '"%s*>')) or (str_find(content[firstLine], '<[^>]>?')) then
     --         genTree_upTag = "\n"..genTree_upTag
     --     end
     -- end
-    table.insert(content, firstLine, genTree_upTag)
+    t_insert(content, firstLine, genTree_upTag)
 
     local strSpaces = ""
     if PARSER.SPACES then
@@ -1560,17 +1637,17 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
             if (key and key~="_itemTag" and key~="_itemClass") then
                 local genTree_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..treeParams[key]..'"'
                 curLine=curLine+1
-                table.insert(content, curLine, genTree_paramTag)
+                t_insert(content, curLine, genTree_paramTag)
                 treeParams[key] = nil
             end
         end
     end
     for key, value in pairs(treeParams) do
-        if not ____table_contains(ordered_keys, key) then
+        if not is_table_contains(ordered_keys, key) then
             if (key and key~="_itemTag" and key~="_itemClass") and value then
                 local genTree_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..value..'"'
                 curLine=curLine+1
-                table.insert(content, curLine, genTree_paramTag)
+                t_insert(content, curLine, genTree_paramTag)
                 treeParams[key] = nil
             end
         end
@@ -1582,12 +1659,12 @@ function XMLParser:addTree(treeParams, put_in, includeKeysForSort)
     local genTree_downTag = savedTabs.."\t</"..tostring(treeParams["_itemTag"])..">"
     
     if PARSER.ENTERS then
-        if string.find(content[curLine], "<[^/>]>?") then
+        if str_find(content[curLine], "<[^/>]>?") then
             genTree_downTag = genTree_downTag.."\n"
         end
     end
 
-    table.insert(content, curLine, genTree_downTag)
+    t_insert(content, curLine, genTree_downTag)
 
     --LOG("addtree "..tostring(treeParams["_itemTag"]))
     --LOG("\n".._TableToString(content))
@@ -1607,7 +1684,7 @@ function XMLParser:removeTree(treeParams, startLine)
     --     Name = "Endings"
     -- }
     local treeName = treeParams["_itemTag"] or PARSER.ROOT
-    if treeName==(PARSER.ROOT or string.lower(PARSER.ROOT)) then
+    if treeName==(PARSER.ROOT or str_low(PARSER.ROOT)) then
         LOG("[E] Module XMLParser.lua === Tree with name \""..tostring(PARSER.ROOT).."\" in "..PARSER.PATH.." cannot be deleted")
         error("XMLParser: Tree with name \""..tostring(PARSER.ROOT).."\" in "..PARSER.PATH.." cannot be deleted")
         return nil
@@ -1624,21 +1701,21 @@ function XMLParser:removeTree(treeParams, startLine)
         if not content[firstLine] then
             break
         end
-        if string.find(content[firstLine], "</"..treeName..">") then
-            table.remove(content, firstLine)
+        if str_find(content[firstLine], "</"..treeName..">") then
+            t_remove(content, firstLine)
             break
         end
-        table.remove(content, firstLine)
+        t_remove(content, firstLine)
     end
 
     firstLine = firstLine - 1
-    while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], ">") do
-        table.remove(content, firstLine)
+    while str_find(content[firstLine], "%s*") and not str_find(content[firstLine], ">") do
+        t_remove(content, firstLine)
         firstLine = firstLine - 1
     end
     firstLine = firstLine + 1
-    while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], "<") do
-        table.remove(content, firstLine)
+    while str_find(content[firstLine], "%s*") and not str_find(content[firstLine], "<") do
+        t_remove(content, firstLine)
     end
 
     local _, name = GetItemKey(treeParams, PARSER.KEYS_SearchingGradient)
@@ -1691,7 +1768,7 @@ function XMLParser:getTree(treeParams, put_in)
     parserLOG("TRY GET<<<\n".._TableToString(treeParams))
 
     parserLOG("dsa "..content[firstLine])
-    if ((string.find(content[firstLine], "</"..treeName..">")) or (string.find(content[firstLine], "<"..treeName))==nil) then
+    if ((str_find(content[firstLine], "</"..treeName..">")) or (str_find(content[firstLine], "<"..treeName))==nil) then
         firstLine = firstLine - 1
     end
     while content[firstLine]==nil do
@@ -1704,7 +1781,7 @@ function XMLParser:getTree(treeParams, put_in)
     local findParamPattern = '%s+([^<\t%s]*)%s*=+%s*"([^"]*)"'
 
     local startTabs = ""
-    local _,_, tabss = string.find(content[firstLine], "(\t*)<")
+    local _,_, tabss = str_find(content[firstLine], "(\t*)<")
     if tabss then startTabs = tabss end
 
     -- if firstLine<folder_firstLine then
@@ -1717,7 +1794,7 @@ function XMLParser:getTree(treeParams, put_in)
     parserLOG("__enddd tree   :: "..lastLine)
     parserLOG("__enddd folder :: "..folder_lastLine)
     repeat
-        local _, _, TreeObj_Name, TreeObj_Value = string.find(content[z], findParamPattern)
+        local _, _, TreeObj_Name, TreeObj_Value = str_find(content[z], findParamPattern)
         local key, value = GetItemKey(treeParams, PARSER.KEYS_SearchingGradient)
         if (TreeObj_Name == key) and (TreeObj_Value==tostring(treeObjName)) then
             parserLOG("____stop line of tree <"..treeName.."> by name {"..tostring(treeObjName).."}")
@@ -1725,7 +1802,7 @@ function XMLParser:getTree(treeParams, put_in)
             break
         end
         z=z+1
-    until ((z==folder_lastLine) or (string.find(content[z-1], "</"..tostring(treeObjName)..">")))
+    until ((z==folder_lastLine) or (str_find(content[z-1], "</"..tostring(treeObjName)..">")))
 
     
 
@@ -1751,7 +1828,7 @@ function XMLParser:getTree(treeParams, put_in)
     parserLOG("\tParent         -> "..tostring(treeData[1]["_itemParent"]))
     parserLOG("\tLine           -> "..tostring(treeData[1]["_itemLine"]))
     parserLOG("\tLineForItems   -> "..tostring(treeData[1]["_itemLineForItems"]))
-    local gotAnyValueInTREETAG = string.find(content[curLine], findParamPattern)
+    local gotAnyValueInTREETAG = str_find(content[curLine], findParamPattern)
     if gotAnyValueInTREETAG then
         parserLOG("gotAnyValueInTREETAG "..content[curLine])
         local itemFirstLineParams = SliceParamsForCommentLines(content[curLine])
@@ -1759,7 +1836,7 @@ function XMLParser:getTree(treeParams, put_in)
         parserLOG(content[curLine])
         for i, line in ipairs(itemFirstLineParams) do
             --parserLOG("{"..line.."}")
-            local _, _, getStrParam, getStrValue = string.find(line, findParamPattern)
+            local _, _, getStrParam, getStrValue = str_find(line, findParamPattern)
             if getStrParam and getStrValue then
                 parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
@@ -1771,7 +1848,7 @@ function XMLParser:getTree(treeParams, put_in)
         parserLOG("not gotAnyValueInTREETAG "..content[curLine])
         repeat
             parserLOG("getStrParam line "..content[curLine])
-            local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+            local _, _, getStrParam, getStrValue = str_find(content[curLine], findParamPattern)
             if getStrParam and getStrValue then
                 parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
@@ -1779,7 +1856,7 @@ function XMLParser:getTree(treeParams, put_in)
                 lastStringParam = tostring(getStrParam)
             end
             curLine=curLine+1
-            if string.find(content[curLine], startTabs.."</"..treeName..">") then
+            if str_find(content[curLine], startTabs.."</"..treeName..">") then
                 treeData[2] = nil
                 treeData[3] = nil
 
@@ -1788,7 +1865,7 @@ function XMLParser:getTree(treeParams, put_in)
 
                 return treeData, content, firstLine, lastLine
             end
-        until string.find(content[curLine-1], ">")
+        until str_find(content[curLine-1], ">")
     end
 
     local item = 0
@@ -1798,14 +1875,14 @@ function XMLParser:getTree(treeParams, put_in)
             curLine = curLine + 1
         end
         if (content[curLine] == startTabs.."</"..treeName..">") then break end
-        local _, _, getStrObject = string.find(content[curLine], startTabs.."\t"..findObjectPattern)
-        if getStrObject then
+        local _, _, getStrObject = str_find(content[curLine], startTabs.."\t"..findObjectPattern)
+        if getStrObject and not PARSER.IGNORE_ParseLines[string_strip(content[curLine])] then
             local ___objectIndexLineNumber = curLine
             item=item+1
             treeData[3][item] = {}
 
             local itemTabs = ""
-            local _,_, tabss = string.find(content[curLine], "(\t*)<")
+            local _,_, tabss = str_find(content[curLine], "(\t*)<")
             if tabss then itemTabs = tabss end
 
             --class
@@ -1822,36 +1899,36 @@ function XMLParser:getTree(treeParams, put_in)
 
             local scanChilds = true
             
-            local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+            local _, _, getStrParam, getStrValue = str_find(content[curLine], findParamPattern)
             if getStrParam and getStrValue then
                 local itemFirstLineParams = SliceParamsForCommentLines(content[curLine])
                 --parserLOG(content[curLine])
                 for i, line in ipairs(itemFirstLineParams) do
-                    local _, _, getStrParam, getStrValue = string.find(line, findParamPattern)
+                    local _, _, getStrParam, getStrValue = str_find(line, findParamPattern)
                     if getStrParam and getStrValue then
                         parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
                         treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
                     end
                 end
-                if string.find(content[curLine], itemTabs.."<"..getStrObject..">?[^<]*</"..getStrObject..">") then
+                if str_find(content[curLine], itemTabs.."<"..getStrObject..">?[^<]*</"..getStrObject..">") then
                     scanChilds = false
                 end
                 curLine=curLine+1
-                if string.find(content[curLine], "[^%s+]+</"..getStrObject..">") and not string.find(content[curLine], findObjectPattern.."%s*</"..getStrObject..">") then
+                if str_find(content[curLine], "[^%s+]+</"..getStrObject..">") and not str_find(content[curLine], findObjectPattern.."%s*</"..getStrObject..">") then
                     scanChilds = false
                 end
             else
                 repeat
                     curLine=curLine+1
-                    local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+                    local _, _, getStrParam, getStrValue = str_find(content[curLine], findParamPattern)
                     if getStrParam and getStrValue then
                         parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
                         treeData[2][item]["_itemProperties"][tostring(getStrParam)] = getStrValue
                     end
-                until string.find(content[curLine-1], ">")
-                if string.find(content[curLine-1], "[^<]*</"..getStrObject..">") then
+                until str_find(content[curLine-1], ">")
+                if str_find(content[curLine-1], "[^<]*</"..getStrObject..">") then
                     scanChilds = false
                 end
             end
@@ -1868,9 +1945,9 @@ function XMLParser:getTree(treeParams, put_in)
                 local child = 1
                 treeData[3][item]["_itemChilds"] = {}
                 repeat
-                    if not (content[curLine] == itemTabs.."</"..getStrObject..">") and not string.find(content[curLine-1], "[^<]+</"..getStrObject..">") and not string.find(content[curLine], itemTabs.."[^<]+</"..getStrObject..">") then
+                    if not (content[curLine] == itemTabs.."</"..getStrObject..">") and not str_find(content[curLine-1], "[^<]+</"..getStrObject..">") and not str_find(content[curLine], itemTabs.."[^<]+</"..getStrObject..">") then
                         --parserLOG("skip "..content[curLine])
-                        if not string.find(content[curLine], itemTabs..""..findObjectPattern) then
+                        if not str_find(content[curLine], itemTabs..""..findObjectPattern) then
                             curLine=curLine+1
                         end
                     end
@@ -1878,17 +1955,17 @@ function XMLParser:getTree(treeParams, put_in)
                     if not content[curLine] then
                         break
                     end
-                    if (content[curLine] == itemTabs.."</"..getStrObject..">") or string.find(content[curLine], itemTabs.."[^<]+</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">") then
+                    if (content[curLine] == itemTabs.."</"..getStrObject..">") or str_find(content[curLine], itemTabs.."[^<]+</"..getStrObject..">") or (content[curLine] == startTabs.."</"..treeName..">") then
                         --parserLOG("breakkkk "..content[curLine])
                         break
                     end
-                    local _, _, ifAgainTree = string.find(content[curLine], itemTabs..""..findObjectPattern)
+                    local _, _, ifAgainTree = str_find(content[curLine], itemTabs..""..findObjectPattern)
                     if ifAgainTree then
                         --parserLOG("hook first child "..content[curLine])
                         while (content[curLine] ~= itemTabs.."</"..getStrObject..">") do
                             if not content[curLine] then break end
-                            local _, _, ifAgainTree_ = string.find(content[curLine], itemTabs..""..findObjectPattern)
-                            if ifAgainTree_ then
+                            local _, _, ifAgainTree_ = str_find(content[curLine], itemTabs..""..findObjectPattern)
+                            if ifAgainTree_ and not PARSER.IGNORE_ParseLines[string_strip(content[curLine])]then
                                 ifAgainTree = ifAgainTree_
                                 local itemChild, intLine = XMLParser:getItemFromLine(content, curLine, getStrObject, itemTabs)
                                 curLine = intLine
@@ -1906,7 +1983,7 @@ function XMLParser:getTree(treeParams, put_in)
                         end
                         break
                     -- else
-                    --     local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+                    --     local _, _, getStrParam, getStrValue = str_find(content[curLine], findParamPattern)
                     --     if getStrParam and getStrValue then
                     --         parserLOG("\t| {"..getStrParam.."} {"..getStrValue.."}")
 
@@ -1924,10 +2001,10 @@ function XMLParser:getTree(treeParams, put_in)
         if not content[curLine+1] then
             break
         end
-        if content[curLine] == startTabs.."</"..treeName..">" or string.find(content[curLine], "[^%s+]+</"..treeName..">") then
+        if content[curLine] == startTabs.."</"..treeName..">" or str_find(content[curLine], "[^%s+]+</"..treeName..">") then
             break
         end
-        if not string.find(content[curLine], startTabs.."\t"..findObjectPattern) and (content[curLine] ~= startTabs.."</"..treeName..">") then
+        if not str_find(content[curLine], startTabs.."\t"..findObjectPattern) and (content[curLine] ~= startTabs.."</"..treeName..">") then
             curLine = curLine + 1
         end
     until content[curLine] == startTabs.."</"..treeName..">"
@@ -1963,24 +2040,24 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
     local findObjectPattern = '%s*<([^!>%s%/]+)>?[/%s]?'
     local findParamPattern = '%s+([^<\t%s]*)%s*=+%s*"([^"]*)"';
 
-    _,_, item["_itemTag"] = string.find(content[curLine], findObjectPattern)
+    _,_, item["_itemTag"] = str_find(content[curLine], findObjectPattern)
     item["_itemClass"] = XMLParser:getItemClass(content, curLine, item["_itemTag"])
     
     item["_itemProperties"] = {}
     
     local startTabs = ""
-    local _,_, tabss = string.find(content[curLine], "(\t*)<")
+    local _,_, tabss = str_find(content[curLine], "(\t*)<")
     if tabss then startTabs = tabss end
 
     parserLOG("+ Child: "..item["_itemTag"])
-    local gotAnyValueInTREETAG = string.find(content[curLine], findParamPattern)
+    local gotAnyValueInTREETAG = str_find(content[curLine], findParamPattern)
     if gotAnyValueInTREETAG then
         --parserLOG("gotAnyValueInTREETAG "..content[curLine])
         local itemFirstLineParams = SliceParamsForCommentLines(content[curLine])
         --parserLOG(content[curLine])
         for i, line in ipairs(itemFirstLineParams) do
             --parserLOG("{"..line.."}")
-            local _, _, getStrParam, getStrValue = string.find(line, findParamPattern)
+            local _, _, getStrParam, getStrValue = str_find(line, findParamPattern)
             if getStrParam and getStrValue then
                 parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
@@ -1991,35 +2068,42 @@ function XMLParser:getItemFromLine(content, intLine, parentName, parentTabs)
     else
         --parserLOG("not gotAnyValueInTREETAG "..content[curLine])
         repeat
-            local _, _, getStrParam, getStrValue = string.find(content[curLine], findParamPattern)
+            local _, _, getStrParam, getStrValue = str_find(content[curLine], findParamPattern)
             if getStrParam and getStrValue then
                 parserLOG("\t-> {"..getStrParam.."} {"..getStrValue.."}")
 
                 item["_itemProperties"][tostring(getStrParam)] = getStrValue
             end
             curLine=curLine+1
+            --parserLOG(content[curLine])
             if item["_itemClass"]=="tree" then
-                if string.find(content[curLine], startTabs.."</"..item["_itemTag"]..">") or string.find(content[curLine], parentTabs.."</"..parentName..">") then
+                if (str_find(content[curLine], startTabs.."</"..item["_itemTag"]..">") or str_find(content[curLine], parentTabs.."</"..parentName..">")) and not PARSER.IGNORE_ParseLines[string_strip(content[curLine])] then
                     return item, curLine
                 end
             else
-                if string.find(content[curLine-1], "/>") or string.find(content[curLine], parentTabs.."</"..parentName..">") then
+                if (str_find(content[curLine-1], "/>") or str_find(content[curLine], parentTabs.."</"..parentName..">")) and not PARSER.IGNORE_ParseLines[string_strip(content[curLine])] then
                     return item, curLine
                 end
             end
-        until string.find(content[curLine-1], ">")
+        until str_find(content[curLine-1], ">")
     end
+
+    --parserLOG("until")
 
     if item["_itemClass"]=="tree" then
         item["_itemChilds"] = {}
         local child = 1
-        while content[curLine]~=startTabs.."</"..item["_itemTag"]..">" and content[curLine]~=parentTabs.."</"..parentName..">" and not string.find(content[curLine], startTabs.."[^<]+</"..item["_itemTag"]..">") do
+        parserLOG("childs on ", content[curLine])
+        while content[curLine] do
             -- if content[curLine-1] then
-            --     if string.find(content[curLine-1], startTabs.."</"..item["_itemTag"]..">") then
+            --     if str_find(content[curLine-1], startTabs.."</"..item["_itemTag"]..">") then
             --         break
             --     end
             -- end
-            if string.find(content[curLine], findObjectPattern) then
+            if (content[curLine]==startTabs.."</"..item["_itemTag"]..">" or content[curLine]==parentTabs.."</"..parentName..">") and not str_find(content[curLine], startTabs.."[^<]+</"..item["_itemTag"]..">") then
+                break
+            end
+            if str_find(content[curLine], findObjectPattern) and not PARSER.IGNORE_ParseLines[string_strip(content[curLine])] then
                 local curLine_
                 item["_itemChilds"][child], curLine_ = XMLParser:getItemFromLine(content, curLine, item["_itemTag"], startTabs)
                 child=child+1
@@ -2041,39 +2125,39 @@ end
 function XMLParser:QuickGet(stringPATH, stringAttrName)
     parserLOG(":::: global method XMLParser:QuickGet ::::")
     local value
-	local f = io.open(stringPATH or "data\\config.cfg", "r")
+	local f = io_open(stringPATH or "data\\config.cfg", "r")
 	if f then
 		local data = f:read("*all")
 		f:close()
-		_,_, value = string.find(data, stringAttrName..'%s*=%s*"([^"]*)"')
+		_,_, value = str_find(data, stringAttrName..'%s*=%s*"([^"]*)"')
         if not value then
             stringAttrName = '"'..stringAttrName..'"'
-            _,_, value = string.find(data, stringAttrName..'%s*>([^<]*)<')
+            _,_, value = str_find(data, stringAttrName..'%s*>([^<]*)<')
         end
         data = nil
 	end
-	return value
+	return _INTERPRETATION(value)
 end
 
 function XMLParser:QuickSet(stringPATH, stringAttrName, stringAttrValue)
     parserLOG(":::: global method XMLParser:QuickSet ::::")
     local doit
-	local f = io.open(stringPATH or "data\\config.cfg", "r")
+	local f = io_open(stringPATH or "data\\config.cfg", "r")
 	if f then
 		local data = f:read("*all")
         f:close()
-        local start, finish = string.find(data, stringAttrName..'%s*=%s*"[^"]*"')
+        local start, finish = str_find(data, stringAttrName..'%s*=%s*"[^"]*"')
         if start then
-            data = string.sub(data, 1, start-1) .. stringAttrName..'="'..stringAttrValue..'"' .. string.sub(data, finish+1)
+            data = str_sub(data, 1, start-1) .. stringAttrName..'="'..stringAttrValue..'"' .. str_sub(data, finish+1)
         else
             stringAttrName = '"'..stringAttrName..'"'
-            start, finish = string.find(data, stringAttrName..'%s*>[^<]*<')
+            start, finish = str_find(data, stringAttrName..'%s*>[^<]*<')
             if start then
-                data = string.sub(data, 1, start-1) .. stringAttrName..'>'..stringAttrValue..'<' .. string.sub(data, finish+1)
+                data = str_sub(data, 1, start-1) .. stringAttrName..'>'..stringAttrValue..'<' .. str_sub(data, finish+1)
             end
         end
         if start then
-            f = io.open(stringPATH or "data\\config.cfg", "w")
+            f = io_open(stringPATH or "data\\config.cfg", "w")
             f:write(data)
             f:close()
             doit = true
@@ -2087,14 +2171,19 @@ end
 function XMLParser:QuickParseLine(stringPATH, stringLinePattern)
     parserLOG(":::: global method XMLParser:QuickParseLine ::::")
     local value
-	local f = io.open(stringPATH or "data\\config.cfg", "r")
+	local f = io_open(stringPATH or "data\\config.cfg", "r")
 	if f then
+        local data = f:read("*all")
+        local _, skoka = str_gsub(data, stringLinePattern, stringLinePattern)
+        f:seek("set",0)
 		for line in f:lines() do
-			_,_, value = string.find(line, stringLinePattern)
+			_,_, value = str_find(line, stringLinePattern)
 			if value then
-                value = string.gsub(value, "\\", "\\\\")
-                value = string.gsub(value, "/", "\\\\")
-				break
+                value = str_gsub(value, "\\", "\\\\")
+                value = str_gsub(value, "/", "\\\\")
+                if 2>skoka then
+				    break
+                end
 			end
 		end
 		f:close()
@@ -2108,14 +2197,14 @@ function XMLParser:ReadBinary(stringPATH)
     parserLOG(":::: global method XMLParser:ReadBinary ::::")
     local path = stringPATH or "input_di8.dll" --"hta.exe"
 	
-	local f = io.open(path, "rb")
+	local f = io_open(path, "rb")
 	if not f then
 		return nil
 	end
 	local data = f:read("*all")
 	f:close()
 
-	local slen = string.len(data)
+	local slen = str_len(data)
 	local kilo = slen / 1024
 	local mega = kilo / 1024
 
@@ -2126,20 +2215,20 @@ function XMLParser:ReadBinary(stringPATH)
 
 	local interpreters = {
 		AsHex = function()
-            return (string.sub(string.gsub(string.gsub(data, ".", function(c)
-				local hex = string.byte(c)
+            return (str_sub(str_gsub(str_gsub(data, ".", function(c)
+				local hex = str_byte(c)
 				local high = math.floor(hex / 16)  --старший полубайт
 				local low = math.mod(hex, 16)      --младший полубайт
 				
 				--преобразуем байт в символы цифр и букв: 48 для цифр (0-9), 55 для букв (A-F)
-				local highChar = (high < 10) and string.char(high + 48) or string.char(high + 55)
-				local lowChar = (low < 10) and string.char(low + 48) or string.char(low + 55)
+				local highChar = (high < 10) and str_char(high + 48) or str_char(high + 55)
+				local lowChar = (low < 10) and str_char(low + 48) or str_char(low + 55)
 				return highChar .. lowChar
 			end), "(..)", "%1 "), 1, -2))
         end,
 		AsASCII = function()
-            return (string.gsub(data, ".", function(c)
-				local byte = string.byte(c)
+            return (str_gsub(data, ".", function(c)
+				local byte = str_byte(c)
 				if byte >= 32 and byte <= 126 then
 					return c
 				else
@@ -2171,7 +2260,7 @@ end
 function XMLParser:openQueue(stringPATH)
     parserLOG(":::: global method XMLParser:openQueue ::::")
     local path = stringPATH or ""
-    local file = io.open(path, "r+")
+    local file = io_open(path, "r+")
     local content = {}
 	if file then
 		local i = 1
@@ -2179,7 +2268,7 @@ function XMLParser:openQueue(stringPATH)
 			content[i] = line
 			i=i+1
 		end
-		PARSER.OPENEDFILEDESCRYPTOR = file
+		PARSER.OPENEDFILEDESCRIPTOR = file
         PARSER.CACHEDFILEDATA = content
         PARSER.PATH = stringPATH
         return content
@@ -2190,7 +2279,7 @@ end
 function XMLParser:closeQueue(content, file)
     parserLOG(":::: global method XMLParser:closeQueue ::::")
     local content = content or PARSER.CACHEDFILEDATA or PARSER.FILEDATA
-    local file = file or PARSER.OPENEDFILEDESCRYPTOR
+    local file = file or PARSER.OPENEDFILEDESCRIPTOR
     if not is_file_open(file) then
         LOG("[E] Module XMLParser.lua === Queue for file '"..tostring(file).."' already closed!")
         println("[E] Module XMLParser.lua === Queue for file '"..tostring(file).."' already closed!")
@@ -2217,16 +2306,20 @@ function XMLParser:GetItemFromFile(stringFindExample, stringItemTagName, stringI
     local gde_item_line = 1
     local parentTabs = ""
     for i, line in ipairs(content) do
-        if string.find(line, stringFindExample) then
+        if str_find(line, stringFindExample) then
             gde_item_line = i
-            while string.find(content[gde_item_line], "<"..tagName)==nil do
+            while true do
+                local linee = content[gde_item_line]
+                if str_find(linee, "<"..tagName) and not PARSER.IGNORE_ParseLines[string_strip(linee)] then
+                    break
+                end
                 gde_item_line=gde_item_line-1
                 if not content[gde_item_line] then
                     break
                 end
             end
-            _,_, parentTabs = string.find(content[gde_item_line], "(\t*)")
-            parentTabs = string.gsub(parentTabs, "\t", "", 1)
+            _,_, parentTabs = str_find(content[gde_item_line], "(\t*)")
+            parentTabs = str_gsub(parentTabs, "\t", "", 1)
             break
         end
     end
@@ -2249,16 +2342,20 @@ function XMLParser:RemoveItemFromFile(stringFindExample, stringItemTagName, stri
     local gde_item_line = 1
     local parentTabs = ""
     for i, line in ipairs(content) do
-        if string.find(line, stringFindExample) then
+        if str_find(line, stringFindExample) then
             gde_item_line = i
-            while string.find(content[gde_item_line], "<"..tagName)==nil do
+            while true do
+                local linee = content[gde_item_line]
+                if str_find(linee, "<"..tagName) and not PARSER.IGNORE_ParseLines[string_strip(linee)] then
+                    break
+                end
                 gde_item_line=gde_item_line-1
                 if not content[gde_item_line] then
                     break
                 end
             end
-            _,_, parentTabs = string.find(content[gde_item_line], "(\t*)")
-            parentTabs = string.gsub(parentTabs, "\t", "", 1)
+            _,_, parentTabs = str_find(content[gde_item_line], "(\t*)")
+            parentTabs = str_gsub(parentTabs, "\t", "", 1)
             break
         end
     end
@@ -2274,18 +2371,18 @@ function XMLParser:RemoveItemFromFile(stringFindExample, stringItemTagName, stri
                     end_fnd = "</"..stringItemTagName..">"
                 end
                 while content[item_line] do
-                    if string.find(content[item_line], end_fnd) then
-                        content[item_line] = string.gsub(content[item_line], '[^<]*'..end_fnd, '')
+                    if str_find(content[item_line], end_fnd) then
+                        content[item_line] = str_gsub(content[item_line], '[^<]*'..end_fnd, '')
                         do_it = true
                         break
                     end
-                    table.remove(content, item_line)
+                    t_remove(content, item_line)
                 end
                 while content[item_line] do
-                    if string.find(content[item_line], '[^%s\t]+') then
+                    if str_find(content[item_line], '[^%s\t]+') then
                         break
                     else
-                        table.remove(content, item_line)
+                        t_remove(content, item_line)
                     end
                 end
                 CollectContentTable(content)
@@ -2310,27 +2407,27 @@ function XMLParser:SetItemValueInFile(stringFindExample, stringItemTagName, stri
         --листаем вниз
         repeat
             valueLine=valueLine+1
-            if string.find(content[valueLine], stringAttributeName..'%s*=%s*"') then
+            if str_find(content[valueLine], stringAttributeName..'%s*=%s*"') then
                 break
             end
-        until string.find(content[valueLine], '/>')
+        until str_find(content[valueLine], '/>')
         --если уперлись вниз, листаем вверх
-        if string.find(content[valueLine], '/>') and not string.find(content[valueLine], stringAttributeName..'%s*=%s*"') then
+        if str_find(content[valueLine], '/>') and not str_find(content[valueLine], stringAttributeName..'%s*=%s*"') then
             repeat
                 valueLine=valueLine-1
-                if string.find(content[valueLine], stringAttributeName..'%s*=%s*"') then
+                if str_find(content[valueLine], stringAttributeName..'%s*=%s*"') then
                     break
                 end
-            until string.find(content[valueLine], '<'..stringItemTagName)
+            until str_find(content[valueLine], '<'..stringItemTagName)
         end
 
-        local _,_, item_value = string.find(content[valueLine], stringAttributeName..'%s*=%s*"([^"]*)"')
+        local _,_, item_value = str_find(content[valueLine], stringAttributeName..'%s*=%s*"([^"]*)"')
         if item_value then
             local pattern = stringPattern or item_value
             local value = stringAttributeValue or item_value
-            item_value = string.gsub(item_value, pattern, value)
+            item_value = str_gsub(item_value, pattern, value)
 
-            content[valueLine] = string.gsub(content[valueLine], stringAttributeName..'(%s*)=(%s*)"[^"]*"', stringAttributeName..'%1=%2"'..item_value..'"')
+            content[valueLine] = str_gsub(content[valueLine], stringAttributeName..'(%s*)=(%s*)"[^"]*"', stringAttributeName..'%1=%2"'..item_value..'"')
 
             do_it = true
 
@@ -2342,26 +2439,170 @@ function XMLParser:SetItemValueInFile(stringFindExample, stringItemTagName, stri
 end
 
 
+function XMLParser:ReadFromBigfile(path_to_file, ItemTagName, AttributeName, AttributeValue, SkokaItems, SkokaDepth)
+    parserLOG(":::: global method XMLParser:ReadFromBigfile ::::")
+    if not is_file_exists(path_to_file) then
+        LOG("[E] Module XMLParser.lua === File '"..tostring(path_to_file).."' does not exists!")
+        println("[E] Module XMLParser.lua === File '"..tostring(path_to_file).."' does not exists!")
+        return nil
+    end
+
+    local results = {}
+    local stack = {}
+    local stackSize = 0
+    local buffer = ""
+    local current = nil
+    local itemDepth = nil
+    local count = 0
+    local attrPattern = '([%w_]+)%s*=%s*"([^"]*)"'
+    local tagnamePattern = "</?%s*([%w_]+)"
+
+    local fastMode = (not AttributeName or not AttributeValue)
+
+    local path = path_to_file
+    local maxItems = SkokaItems
+    local maxDepth = SkokaDepth
+    local itemTag = ItemTagName or "Object"
+    local attrName = AttributeName or "Prototype"
+    local attrValue = AttributeValue or "trigger"
+
+
+    local function parse_attrs(buffer, startPos, endPos)
+        local attrs = nil
+        local pos = startPos
+        while true do
+            local s, e, key, value = str_find(buffer, attrPattern, pos)
+            if not s or s > endPos then break end
+            if not attrs then attrs = {} end
+            attrs[key] = value
+            pos = e + 1
+        end
+        return attrs or {}
+    end
+
+    local function process_tag(buffer, startPos, endPos)
+        local _,_, name = str_find(buffer, tagnamePattern, startPos)
+        if not name then return end
+
+        local closing = (str_byte(buffer, startPos + 1) == 47)
+        local selfClosing = (str_byte(buffer, endPos - 1) == 47)
+
+        if not closing then
+            local depth = stackSize + 1
+
+            local attrs = parse_attrs(buffer, startPos, endPos)
+
+            local node = {
+                _itemTag = name,
+                _itemProperties = attrs,
+                _itemChilds = {}
+            }
+
+            if name == itemTag then
+                current = node
+                itemDepth = depth
+                if (attrs[attrName] == attrValue) or fastMode then
+                    node._itemTarget = true
+                end
+            end
+
+            stackSize = depth
+            stack[depth] = node
+
+            if depth > 1 then
+                local parent = stack[depth - 1]
+                local allow = true
+                if itemDepth and maxDepth then
+                    local relDepth = depth - itemDepth
+                    if relDepth > maxDepth then
+                        allow = false
+                    end
+                end
+                if allow then
+                    t_insert(parent._itemChilds, node)
+                end
+            end
+
+            if selfClosing then
+                stack[depth] = nil
+                stackSize = depth - 1
+                if name == itemTag and node._itemTarget then
+                    t_insert(results, node)
+                    count = count + 1
+                    if maxItems and count >= maxItems then
+                        return true
+                    end
+                end
+            end
+        else
+            local depth = stackSize
+            local node = stack[depth]
+
+            stack[depth] = nil
+            stackSize = depth - 1
+
+            if node and node._itemTag == itemTag then
+                if node._itemTarget then
+                    t_insert(results, node)
+                    count = count + 1
+                    if maxItems and count >= maxItems then
+                        return true
+                    end
+                end
+                current = nil
+                itemDepth = nil
+            end
+        end
+    end
+
+    for line in io_lines(path) do
+        buffer = buffer .. line
+
+        local pos = 1
+        while true do
+            local startTag = str_find(buffer, "<", pos)
+            if not startTag then
+                buffer = ""
+                break
+            end
+            local endTag = str_find(buffer, ">", startTag)
+            if not endTag then
+                buffer = str_sub(buffer, startTag)
+                break
+            end
+
+            if process_tag(buffer, startTag, endTag) then
+                return results
+            end
+            pos = endTag + 1
+        end
+    end
+
+    return results
+end
+
+
 function XMLParser:ConvertPropertiesIn(stringInputPATH, stringOutputPATH)
+    parserLOG(":::: global method XMLParser:ConvertPropertiesIn ::::")
 	local outputPATH = stringOutputPATH or "func_ConvertPropertiesIn.xml"
 	local inputRoot = ""
-	if string.find(stringInputPATH, "dynamicscene.xml") then
+	if str_find(stringInputPATH, "dynamicscene.xml") then
 		inputRoot = "DynamicScene"
-	elseif string.find(stringInputPATH, "world.xml") then
+	elseif str_find(stringInputPATH, "world.xml") then
 		inputRoot = "World"
 	end
 
 	if inputRoot~="" then
-		local inputFile = io.open(stringInputPATH, "r")
+		local inputFile = io_open(stringInputPATH, "r")
 		if inputFile then
-			local outputFile = io.open(outputPATH, "w")
+			local outputFile = io_open(outputPATH, "w")
 			if outputFile then
 				for line in inputFile:lines() do
 					local str = line
-					str = string.gsub(str, 'Pos(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)"', 'Pos%1=%2"CVector(%3, %4, %5)"')
-					str = string.gsub(str, 'Rot(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)%s+(%S+)"', 'Rot%1=%2"Quaternion(%3, %4, %5, %6)"')
-					str = string.gsub(str, 'org(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)"', 'org%1=%2"CVector(%3, %4, %5)"')
-					str = string.gsub(str, 'rot(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)%s+(%S+)"', 'rot%1=%2"Quaternion(%3, %4, %5, %6)"')
+					str = str_gsub(str, 'Pos(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)"', 'Pos%1=%2"CVector(%3, %4, %5)"')
+					str = str_gsub(str, 'Rot(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)%s+(%S+)"', 'Rot%1=%2"Quaternion(%3, %4, %5, %6)"')
+					str = str_gsub(str, 'org(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)"', 'org%1=%2"CVector(%3, %4, %5)"')
+					str = str_gsub(str, 'rot(%s*)=(%s*)"(%S+)%s+(%S+)%s+(%S+)%s+(%S+)"', 'rot%1=%2"Quaternion(%3, %4, %5, %6)"')
 					outputFile:write(str.."\n")
 				end
 				outputFile:close()
@@ -2397,39 +2638,39 @@ function XMLParser:getItemClass(content, curLine, getStrObject)
     local openTagLine = content[lineForScan]
     local closeTagLine = ""
     parserLOG("sssss -> "..content[lineForScan])
-    if not string.find(openTagLine, "/>") and not string.find(openTagLine, ">") then
+    if not str_find(openTagLine, "/>") and not str_find(openTagLine, ">") then
         repeat
             closeTagLine = content[lineForScan]
             lineForScan=lineForScan+1
             parserLOG("fnd close tag -> "..closeTagLine)
 
-            if string.find(closeTagLine, "[^/]>") then
+            if str_find(closeTagLine, "[^/]>") then
                 getItemClass = "tree"
                 break
             end
-            if (not string.find(closeTagLine, "/>") and (string.find(closeTagLine, findObjectPattern))) then
-                local _, _, newObj = string.find(closeTagLine, findObjectPattern)
-                while ((string.find(closeTagLine, "/>") or (string.find(closeTagLine, "</"..newObj..">")))) do
+            if (not str_find(closeTagLine, "/>") and (str_find(closeTagLine, findObjectPattern))) then
+                local _, _, newObj = str_find(closeTagLine, findObjectPattern)
+                while ((str_find(closeTagLine, "/>") or (str_find(closeTagLine, "</"..newObj..">")))) do
                     closeTagLine = content[lineForScan]
                     lineForScan=lineForScan+1
                     parserLOG("fnd objec tag -> "..closeTagLine)
                 end 
             end
-        until ((string.find(content[lineForScan-1], "/>") and not (string.find(content[lineForScan-1], findObjectPattern))) or string.find(content[lineForScan-1], "</"..getStrObject..">"))
-        if (string.find(openTagLine, "<"..getStrObject..">?[/%s]?")) and (string.find(closeTagLine, "</"..getStrObject..">")) then
+        until ((str_find(content[lineForScan-1], "/>") and not (str_find(content[lineForScan-1], findObjectPattern))) or str_find(content[lineForScan-1], "</"..getStrObject..">"))
+        if (str_find(openTagLine, "<"..getStrObject..">?[/%s]?")) and (str_find(closeTagLine, "</"..getStrObject..">")) then
             getItemClass = "tree"
                 parserLOG("$tree")
-        elseif (string.find(openTagLine, "<"..getStrObject)) and (string.find(closeTagLine, "/>")) then
+        elseif (str_find(openTagLine, "<"..getStrObject)) and (str_find(closeTagLine, "/>")) then
             getItemClass = "object"
                 parserLOG("$object")
         else
             parserLOG("$tree or kurva")
         end
     else
-        if string.find(openTagLine, "/>") then
+        if str_find(openTagLine, "/>") then
             getItemClass = "object"
                 parserLOG("$object")
-        elseif string.find(openTagLine, ">") then
+        elseif str_find(openTagLine, ">") then
             getItemClass = "tree"
                 parserLOG("$tree")
         else
@@ -2473,15 +2714,15 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     firstLine = put_inParams["_itemLine"] or firstLine
 
     local savedTabs = ""
-    local _, _, savedTabss = string.find(content[firstLine], "(\t*)")
+    local _, _, savedTabss = str_find(content[firstLine], "(\t*)")
     if savedTabss then
         savedTabs = savedTabss
     end
 
-    if not string.find(content[firstLine], ">") then
+    if not str_find(content[firstLine], ">") then
         repeat
             firstLine=firstLine+1
-        until string.find(content[firstLine], ">")
+        until str_find(content[firstLine], ">")
     end
 
     firstLine = firstLine + 1
@@ -2489,11 +2730,11 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     local curLine = firstLine
     local genObject_upTag = savedTabs.."\t<"..tostring(objectParams["_itemTag"])
     -- if PARSER.ENTERS then
-    --     if (string.find(content[firstLine-1], "</[^>]>")) or (not string.find(content[firstLine-1], "<[^>]>?")) then
+    --     if (str_find(content[firstLine-1], "</[^>]>")) or (not str_find(content[firstLine-1], "<[^>]>?")) then
     --         genObject_upTag = "\n"..genObject_upTag
     --     end
     -- end
-    table.insert(content, firstLine, genObject_upTag)
+    t_insert(content, firstLine, genObject_upTag)
 
     local strSpaces = ""
     if PARSER.SPACES then
@@ -2507,17 +2748,17 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
             if (key and key~="_itemTag" and key~="_itemClass") then
                 local genObject_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..objectParams[key]..'"'
                 curLine=curLine+1
-                table.insert(content, curLine, genObject_paramTag)
+                t_insert(content, curLine, genObject_paramTag)
                 objectParams[key] = nil
             end
         end
     end
     for key, value in pairs(objectParams) do
-        if not ____table_contains(ordered_keys, key) then
+        if not is_table_contains(ordered_keys, key) then
             if (key and key~="_itemTag" and key~="_itemClass") then
                 local genObject_paramTag = savedTabs.."\t\t"..key..''..strSpaces..'='..strSpaces..'"'..value..'"'
                 curLine=curLine+1
-                table.insert(content, curLine, genObject_paramTag)
+                t_insert(content, curLine, genObject_paramTag)
                 objectParams[key] = nil
             end
         end
@@ -2525,7 +2766,7 @@ function XMLParser:addObject(objectParams, put_in, includeKeysForSort)
     content[curLine] = content[curLine].." />"
 
     if PARSER.ENTERS then
-        if string.find(content[curLine+1], "<[^/>]>?") then
+        if str_find(content[curLine+1], "<[^/>]>?") then
             content[curLine] = content[curLine].."\n"
         end
     end
@@ -2593,21 +2834,21 @@ function XMLParser:removeObject(treeParams, objectParams)
             if not content[objLine] then
                 break
             end
-            if string.find(content[objLine], "</"..treeName..">") then
-                table.remove(content, objLine)
+            if str_find(content[objLine], "</"..treeName..">") then
+                t_remove(content, objLine)
                 break
             end
-            table.remove(content, objLine)
+            t_remove(content, objLine)
         end
 
         objLine = objLine - 1
-        while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], ">") do
-            table.remove(content, objLine)
+        while str_find(content[firstLine], "%s*") and not str_find(content[firstLine], ">") do
+            t_remove(content, objLine)
             objLine = objLine - 1
         end
         objLine = objLine + 1
-        while string.find(content[firstLine], "%s*") and not string.find(content[firstLine], "<") do
-            table.remove(content, objLine)
+        while str_find(content[firstLine], "%s*") and not str_find(content[firstLine], "<") do
+            t_remove(content, objLine)
         end
 
         parserLOG("[I] Module XMLParser.lua === Object <"..objectParams["_itemTag"].."> with value \""..tostring(objectParams[KeyForSearch]).."\" in tree <"..treeName.."> with name \""..tostring(treeee).."\" '"..PARSER.PATH.."' deleted succesfully")
@@ -2628,7 +2869,7 @@ end
 function XMLParser:Wrap(objectParams)
     parserLOG(":::: global method XMLParser:Wrap ::::")
     local fast_content = PARSER.TREEDATA
-    local content = _CopyTable(PARSER.FILEDATA)
+    local content = table_copy(PARSER.FILEDATA)
     local firstLine = PARSER.TREEFIRSTLINE
     local lastLine = PARSER.TREELASTLINE
     local itemName = PARSER.TREEDATA[1]["_itemTag"]
@@ -2644,12 +2885,12 @@ function XMLParser:Wrap(objectParams)
             parserPRINT("Couldn't access the updated tree")
             return nil
         end
-        if string.find(content[firstLine], ">") then
+        if str_find(content[firstLine], ">") then
             parserLOG("[E] Module XMLParser.lua === Invalid structure of item <"..itemName.."> on line '"..firstLine.."'")
             parserPRINT("Invalid structure of item <"..itemName.."> on line '"..firstLine.."'")
             return nil
         end
-        while string.find(content[firstLine], "<"..itemName)==nil do
+        while str_find(content[firstLine], "<"..itemName)==nil do
             parserLOG("nenashol")
             firstLine=firstLine-1
         end
@@ -2661,9 +2902,9 @@ function XMLParser:Wrap(objectParams)
         
         local catchTree = content
         local eraseLine = firstLine
-        while string.find(catchTree[eraseLine], ">")==nil do
+        while str_find(catchTree[eraseLine], ">")==nil do
             eraseLine = eraseLine + 1
-            if string.find(catchTree[eraseLine], ">") then
+            if str_find(catchTree[eraseLine], ">") then
                 eraseLine = eraseLine + 1
                 break
             end
@@ -2673,12 +2914,12 @@ function XMLParser:Wrap(objectParams)
             catchTree[firstLine-1] = catchTree[firstLine-1].."@@@<superMegaTagForUNWRAP>@@@"
 
             while (catchTree[eraseLine]~=nil) do
-                table.remove(catchTree, eraseLine)
+                t_remove(catchTree, eraseLine)
             end
-            while (catchTree[1]~=nil) and (not (string.find(catchTree[1], "@@@<superMegaTagForUNWRAP>@@@"))) do
-                table.remove(catchTree, 1)
+            while (catchTree[1]~=nil) and (not (str_find(catchTree[1], "@@@<superMegaTagForUNWRAP>@@@"))) do
+                t_remove(catchTree, 1)
             end
-            table.remove(catchTree, 1)
+            t_remove(catchTree, 1)
 
             parserLOG("cathced item = {\n".._TableToString(catchTree).."}end")
         else
@@ -2688,7 +2929,7 @@ function XMLParser:Wrap(objectParams)
 
         local wrapedItem = PackStringFromTable(catchTree, true)
 
-        if (not wrapedItem) or (not (string.find(wrapedItem, "<"..itemName))) and (not (string.find(wrapedItem, ">"))) then
+        if (not wrapedItem) or (not (str_find(wrapedItem, "<"..itemName))) and (not (str_find(wrapedItem, ">"))) then
             LOG("[E] Module XMLParser.lua === Invalid structure of item")
             parserPRINT("Invalid structure of item")
             return nil
@@ -2721,12 +2962,12 @@ function XMLParser:Unwrap(objectParams)
             parserPRINT("Couldn't access the updated tree")
             return nil
         end
-        if not string.find(content[firstLine], ">") then
+        if not str_find(content[firstLine], ">") then
             LOG("[E] Module XMLParser.lua === Invalid structure of item <"..itemName.."> on line '"..firstLine.."'")
             parserPRINT("Invalid structure of item <"..itemName.."> on line '"..firstLine.."'")
             return nil
         end
-        while string.find(content[firstLine], "<"..itemName)==nil do
+        while str_find(content[firstLine], "<"..itemName)==nil do
             parserLOG("nenashol")
             firstLine=firstLine-1
         end
@@ -2739,8 +2980,8 @@ function XMLParser:Unwrap(objectParams)
         
         local catchTree = content
         local eraseLine = firstLine
-        while string.find(catchTree[eraseLine-1], ">")==nil do
-            if string.find(catchTree[eraseLine], ">") then
+        while str_find(catchTree[eraseLine-1], ">")==nil do
+            if str_find(catchTree[eraseLine], ">") then
                 break
             end
             eraseLine = eraseLine + 1
@@ -2750,12 +2991,12 @@ function XMLParser:Unwrap(objectParams)
             catchTree[firstLine] = catchTree[firstLine].."@@@<superMegaTagForUNWRAP>@@@"
 
             while (catchTree[eraseLine]~=nil) do
-                table.remove(catchTree, eraseLine)
+                t_remove(catchTree, eraseLine)
             end
-            while (catchTree[1]~=nil) and (not (string.find(catchTree[1], "@@@<superMegaTagForUNWRAP>@@@"))) do
-                table.remove(catchTree, 1)
+            while (catchTree[1]~=nil) and (not (str_find(catchTree[1], "@@@<superMegaTagForUNWRAP>@@@"))) do
+                t_remove(catchTree, 1)
             end
-            table.remove(catchTree, 1)
+            t_remove(catchTree, 1)
 
             parserLOG("cathced item = {\n".._TableToString(catchTree).."}end")
         else
@@ -2765,7 +3006,7 @@ function XMLParser:Unwrap(objectParams)
 
         local unwrapedItem = PackStringFromTable(catchTree)
 
-        if (not unwrapedItem) or (not string.find(unwrapedItem, "<"..itemName)) then
+        if (not unwrapedItem) or (not str_find(unwrapedItem, "<"..itemName)) then
             LOG("[E] Module XMLParser.lua === Invalid structure of item")
             parserPRINT("Invalid structure of item")
             return nil
@@ -2810,12 +3051,12 @@ function XMLParser:GetLineWithContent(line, stringContent)
 
     local strLine 
     if line and stringContent then
-        if string.find(PARSER.FILEDATA[line], stringContent) then
+        if str_find(PARSER.FILEDATA[line], stringContent) then
             strLine = PARSER.FILEDATA[line]
         end
     elseif stringContent then
         for i, v in ipairs(PARSER.FILEDATA) do
-            if string.find(v, stringContent) then
+            if str_find(v, stringContent) then
                 strLine = PARSER.FILEDATA[i]
                 break
             end
@@ -2838,24 +3079,24 @@ function XMLParser:RemoveLineWithContent(line, stringContent)
 
     local strLine 
     if line and stringContent then
-        if string.find(PARSER.FILEDATA[line], stringContent) then
+        if str_find(PARSER.FILEDATA[line], stringContent) then
             strLine = PARSER.FILEDATA[line]
             if strLine then
-                table.remove(PARSER.FILEDATA, line)
+                t_remove(PARSER.FILEDATA, line)
             end
         end
     elseif stringContent then
         for i, v in ipairs(PARSER.FILEDATA) do
-            if string.find(v, stringContent) then
+            if str_find(v, stringContent) then
                 strLine = PARSER.FILEDATA[i]
-                table.remove(PARSER.FILEDATA, i)
+                t_remove(PARSER.FILEDATA, i)
                 break
             end
         end
     elseif line then
         strLine = PARSER.FILEDATA[line]
         if strLine then
-            table.remove(PARSER.FILEDATA, line)
+            t_remove(PARSER.FILEDATA, line)
         end
     end
 
@@ -2942,7 +3183,7 @@ function XMLParser:AddCommentNearItem(comment, objectParams)
 
     local commentStr = "<!-- "..comment.." -->"
 
-    table.insert(PARSER.FILEDATA, commentLine, commentStr)
+    t_insert(PARSER.FILEDATA, commentLine, commentStr)
 
     --WriteXMLParserFileForTable(PARSER.FILEDATA)
     CollectContentTable(PARSER.FILEDATA)
@@ -2997,28 +3238,28 @@ function XMLParser:trigger(stringTriggerName)
                 local inScript = false
                 while file[_itemLine] do
                     if not inScript then
-                        if string.find(file[_itemLine], "<event[^>]*/>") then
+                        if str_find(file[_itemLine], "<event[^>]*/>") then
                             --LOG("{"..file[_itemLine].."}")
                             local event = {}
                             for i, key in ipairs(event_properties) do
-                                local _,_, property = string.find(file[_itemLine], key..'%s*=%s*"([^"]*)"')
+                                local _,_, property = str_find(file[_itemLine], key..'%s*=%s*"([^"]*)"')
                                 --LOG(key.." "..tostring(property))
                                 if property then event[key] = property end
                             end
-                            table.insert(triggerEvents, event)
+                            t_insert(triggerEvents, event)
                         end
                     else
                         local retVal = ""
-                        if not string.find(file[_itemLine], "</?script>") and not string.find(file[_itemLine], "</?trigger>") then
+                        if not str_find(file[_itemLine], "</?script>") and not str_find(file[_itemLine], "</?trigger>") then
                             retVal = file[_itemLine]
                             --triggerBody = triggerBody.."\n"..retVal
                             triggerBody = triggerBody..retVal.."; "
                         end
                     end
-                    if string.find(file[_itemLine], "<script>") then
+                    if str_find(file[_itemLine], "<script>") then
                         inScript = true
                     end
-                    if string.find(file[_itemLine], "</trigger>") then
+                    if str_find(file[_itemLine], "</trigger>") then
                         break
                     end
 
@@ -3031,12 +3272,12 @@ function XMLParser:trigger(stringTriggerName)
             local triggerScript = {}
             triggerBody = triggerBody.."\n"
             local startLine, endLine = 1, 1
-            for i = 1, string.len(triggerBody) do
+            for i = 1, str_len(triggerBody) do
                 startLine, endLine = startLine, i
-                if string.sub(triggerBody, i, i) == "\n" then
-                    local line = string.sub(triggerBody, startLine, endLine)
-                    line = string.gsub(line, "\n", "")
-                    table.insert(triggerScript, line)
+                if str_sub(triggerBody, i, i) == "\n" then
+                    local line = str_sub(triggerBody, startLine, endLine)
+                    line = str_gsub(line, "\n", "")
+                    t_insert(triggerScript, line)
                     startLine = i
                 end
             end
@@ -3044,7 +3285,7 @@ function XMLParser:trigger(stringTriggerName)
         end
 
         local get_script = function()
-            local triggerBody = string.gsub(triggerBody, "; ", "\n")
+            local triggerBody = str_gsub(triggerBody, "; ", "\n")
             return parse_triggerScript(triggerBody)
         end
 
@@ -3059,20 +3300,20 @@ function XMLParser:trigger(stringTriggerName)
             if content then
                 local i = _itemLine
                 while content[i] do
-                    if string.find(content[i], "</script>") then
+                    if str_find(content[i], "</script>") then
                         i=i-1
                         while content[i] do
-                            if string.find(content[i], "<script>") then
-                                while string.find(content[i], "</script>")==nil do
+                            if str_find(content[i], "<script>") then
+                                while str_find(content[i], "</script>")==nil do
                                     i=i+1
                                 end
                                 break
                             end
-                            table.remove(content, i)
+                            t_remove(content, i)
                             i=i-1
                         end
                     end
-                    if string.find(content[i], "<script>") then
+                    if str_find(content[i], "<script>") then
                         break
                     end
                     i=i-1
@@ -3087,10 +3328,10 @@ function XMLParser:trigger(stringTriggerName)
             if content then
                 local i = iline or _itemLine
                 while content[i] do
-                    if string.find(content[i], "<script>") then
+                    if str_find(content[i], "<script>") then
                         i=i+1
                         for j, line in ipairs(triggerScript) do
-                            table.insert(content, i, line)
+                            t_insert(content, i, line)
                             i=i+1
                         end
                         return content
@@ -3110,12 +3351,12 @@ function XMLParser:trigger(stringTriggerName)
                 local content = file or read_triggers_file()
                 local i = _itemLine
                 repeat
-                    table.remove(content, i)
+                    t_remove(content, i)
                     if not content[i] then
                         break
                     end
                     i=i-1
-                until string.find(content[i], "</trigger>") or string.find(content[i], "<triggers>")
+                until str_find(content[i], "</trigger>") or str_find(content[i], "<triggers>")
                 return write_triggers_file(content)
             end,
             IsActive = function()
@@ -3126,17 +3367,17 @@ function XMLParser:trigger(stringTriggerName)
                 local content = file or read_triggers_file()
                 local i = _itemLine
                 while content[i] do
-                    if string.find(content[i], "<trigger") and string.find(content[i], 'Name%s*=%s*"'..stringTriggerName..'"') then
+                    if str_find(content[i], "<trigger") and str_find(content[i], 'Name%s*=%s*"'..stringTriggerName..'"') then
                         if boolActive then
-                            content[i] = string.gsub(content[i], 'active="[^"]"', 'active="1"')
+                            content[i] = str_gsub(content[i], 'active="[^"]"', 'active="1"')
                         else
-                            content[i] = string.gsub(content[i], 'active="[^"]"', 'active="0"')
+                            content[i] = str_gsub(content[i], 'active="[^"]"', 'active="0"')
                         end
                         do_it = true
                         break
                     end
                     i=i-1
-                    if string.find(content[i], "</trigger>") then
+                    if str_find(content[i], "</trigger>") then
                         break
                     end
                 end
@@ -3144,14 +3385,14 @@ function XMLParser:trigger(stringTriggerName)
                 return do_it
             end,
             GetBody = function()
-                triggerBody = string.gsub(triggerBody, "; ", "\n")
+                triggerBody = str_gsub(triggerBody, "; ", "\n")
                 return triggerBody
             end,
             DoScript = function() 
                 local call_code = function()
-                    triggerBody = string.gsub(triggerBody, ";", "\n")
-                    triggerBody = string.gsub(triggerBody, "\t", " ")
-                    triggerBody = string.gsub(triggerBody, "trigger:[^%)]*%)", "") --trigger global methods = nil value, please specify the reference to the trigger as an object [local trig = getObj("trigger_name")] in the trigger body.
+                    triggerBody = str_gsub(triggerBody, ";", "\n")
+                    triggerBody = str_gsub(triggerBody, "\t", " ")
+                    triggerBody = str_gsub(triggerBody, "trigger:[^%)]*%)", "") --trigger global methods = nil value, please specify the reference to the trigger as an object [local trig = getObj("trigger_name")] in the trigger body.
                     local str = "local f = function() "..triggerBody.." end; return f"
                     local f = dostring(str)
                     if f then 
@@ -3199,17 +3440,17 @@ function XMLParser:trigger(stringTriggerName)
                 local content = file or read_triggers_file()
                 local i = _itemLine
                 while content[i] do
-                    if string.find(content[i], "<trigger") then
+                    if str_find(content[i], "<trigger") then
                         break
                     end
-                    if string.find(content[i], "<event") then
-                        if string.find(content[i], 'eventid%s*=%s*"'..eventid..'"') then
+                    if str_find(content[i], "<event") then
+                        if str_find(content[i], 'eventid%s*=%s*"'..eventid..'"') then
                             for j, key in ipairs(event_properties) do
                                 if key~="eventid" then
-                                    local _,_, property = string.find(content[i], key..'%s*=%s*"([^"]*)"')
+                                    local _,_, property = str_find(content[i], key..'%s*=%s*"([^"]*)"')
                                     if event[key] and property then
                                         if event[key]==property then
-                                            table.remove(content, i)
+                                            t_remove(content, i)
                                             do_it = true
                                             break
                                         end
@@ -3228,8 +3469,8 @@ function XMLParser:trigger(stringTriggerName)
                 local content = file or read_triggers_file()
                 local i = _itemLine
                 while content[i] do
-                    if string.find(content[i], "<event") or string.find(content[i], "<trigger") then
-                        local _,_, tabs = string.find(content[i], "(\t*)")
+                    if str_find(content[i], "<event") or str_find(content[i], "<trigger") then
+                        local _,_, tabs = str_find(content[i], "(\t*)")
                         if not tabs then tabs = "" end
                         i=i+1
                         local eventt = tabs..'<event '
@@ -3237,7 +3478,7 @@ function XMLParser:trigger(stringTriggerName)
                             eventt = eventt..key..'="'..value..'" '
                         end
                         eventt = eventt..'/>'
-                        table.insert(content, i, eventt)
+                        t_insert(content, i, eventt)
                         do_it = true
                         break
                     end
@@ -3259,7 +3500,7 @@ function XMLParser:trigger(stringTriggerName)
             GetLineByScriptContent = function(_, stringContent)
                 local triggerScript = get_script()
                 for i, line in ipairs(triggerScript) do
-                    if string.find(line, stringContent) then
+                    if str_find(line, stringContent) then
                         return i
                     end
                 end
@@ -3286,7 +3527,7 @@ function XMLParser:trigger(stringTriggerName)
                 local do_it = false
                 local triggerScript = get_script()
                 if type(intLineORstringContent)=="number" then
-                    if table.remove(triggerScript, intLineORstringContent) then
+                    if t_remove(triggerScript, intLineORstringContent) then
                         local content, i = delete_triggerScript()
                         content = write_triggerScript(content, i, triggerScript)
                         
@@ -3294,8 +3535,8 @@ function XMLParser:trigger(stringTriggerName)
                     end
                 elseif type(intLineORstringContent)=="string" then
                     for i, line in ipairs(triggerScript) do
-                        if string.find(line, intLineORstringContent) then
-                            if table.remove(triggerScript, i) then
+                        if str_find(line, intLineORstringContent) then
+                            if t_remove(triggerScript, i) then
                                 local content, i = delete_triggerScript()
                                 content = write_triggerScript(content, i, triggerScript)
                                 
@@ -3309,20 +3550,20 @@ function XMLParser:trigger(stringTriggerName)
             AddScript = function(_, stringScript, intLine)
                 local call_code = function()
                     local triggerScript = get_script()
-                    local intLine = intLine or getn(triggerScript) + 1
+                    local intLine = intLine or t_getn(triggerScript) + 1
 
-                    local additional_triggerScript = string.gsub(stringScript, "; ", "\n")
+                    local additional_triggerScript = str_gsub(stringScript, "; ", "\n")
                     additional_triggerScript = parse_triggerScript(additional_triggerScript)
 
-                    local _,_, tabs = string.find(tostring(triggerScript[intLine]), "(\t*)")
+                    local _,_, tabs = str_find(tostring(triggerScript[intLine]), "(\t*)")
                     for i, newLine in ipairs(additional_triggerScript) do
                         if tabs then
                             newLine = tabs..newLine
                         end
-                        table.insert(triggerScript, intLine, newLine)
+                        t_insert(triggerScript, intLine, newLine)
                         intLine=intLine+1
                     end
-                    table.remove(triggerScript) --kek
+                    t_remove(triggerScript) --kek
 
                     local content, i = delete_triggerScript()
                     content = write_triggerScript(content, i, triggerScript)
@@ -3343,16 +3584,16 @@ function XMLParser:trigger(stringTriggerName)
         local TRIGGER = {
             Add = function(_, intActive, tableEvents, tableScript)
                 local content = file or read_triggers_file()
-                local i = getn(content)
+                local i = t_getn(content)
                 repeat
                     i=i-1
-                until string.find(content[i-1], "</trigger>") or string.find(content[i-1], "<triggers>")
+                until str_find(content[i-1], "</trigger>") or str_find(content[i-1], "<triggers>")
                 
                 local intActive = intActive or 0
                 local tableEvents = tableEvents or {'<event timeout="0" eventid="GE_TIME_PERIOD" />'}
-                tableEvents = table.concat(tableEvents, "\n\t\t")
+                tableEvents = t_concat(tableEvents, "\n\t\t")
                 local tableScript = tableScript or {'trigger:Deactivate()'}
-                tableScript = table.concat(tableScript, "\n\t\t\t")
+                tableScript = t_concat(tableScript, "\n\t\t\t")
 
                 local trigger_item = {
                     '\t<trigger Name="'..stringTriggerName..'" active="'..intActive..'">',
@@ -3363,9 +3604,9 @@ function XMLParser:trigger(stringTriggerName)
                     '\t</trigger>'
                 }
 
-                local trigger = table.concat(trigger_item, "\n")
+                local trigger = t_concat(trigger_item, "\n")
 
-                table.insert(content, i+1, trigger)
+                t_insert(content, i+1, trigger)
 
                 return write_triggers_file(content)
             end
@@ -3592,8 +3833,8 @@ function XMLParser:Tree(treeParams)
         if TREE["content"] then
             local line = TREE["firstLine"]
             while ((TREE["content"][line]~=nil) or (line==TREE["lastLine"])) do
-                if string.find(TREE["content"][line], paramKey) then
-                    local editedStr, count = string.gsub(TREE["content"][line], '(%s+)'..tostring(paramKey)..'(%s*)=(%s*)"[^"]*"', '%1'..tostring(paramKey)..'%2=%3"'..tostring(paramValue)..'"')
+                if str_find(TREE["content"][line], paramKey) then
+                    local editedStr, count = str_gsub(TREE["content"][line], '(%s+)'..tostring(paramKey)..'(%s*)=(%s*)"[^"]*"', '%1'..tostring(paramKey)..'%2=%3"'..tostring(paramValue)..'"')
                     if count>0 then
                         TREE["content"][line] = editedStr
 
@@ -3603,7 +3844,7 @@ function XMLParser:Tree(treeParams)
                     end
                 end
                 line=line+1
-                if string.find(TREE["content"][line-1], ">") then
+                if str_find(TREE["content"][line-1], ">") then
                     break
                 end
             end
@@ -3645,7 +3886,7 @@ function XMLParser:Tree(treeParams)
         if TREE["content"] then
             local paramLine = TREE["firstLine"]
             while ((TREE["content"][paramLine]~=nil) or (paramLine==TREE["lastLine"])) do
-                if string.find(TREE["content"][paramLine], ">") then
+                if str_find(TREE["content"][paramLine], ">") then
                     break
                 end
                 paramLine=paramLine+1
@@ -3654,7 +3895,7 @@ function XMLParser:Tree(treeParams)
             local lineForAddParam = TREE["content"][paramLine]
 
             local savedTabs = ""
-            local _, _, savedTabss = string.find(TREE["content"][paramLine], "(\t*)")
+            local _, _, savedTabss = str_find(TREE["content"][paramLine], "(\t*)")
             if savedTabss then
                 savedTabs = savedTabss
             end
@@ -3665,16 +3906,16 @@ function XMLParser:Tree(treeParams)
             end
 
             local newStr = paramKey..''..strSpaces..'='..strSpaces..'"'..paramValue..'"'
-            if string.find(TREE["content"][paramLine], "<"..TREE["treeName"]) then
-                TREE["content"][paramLine], count = string.gsub(TREE["content"][paramLine], '(%s*[^>]*)>', '%1 '..newStr..'>')
+            if str_find(TREE["content"][paramLine], "<"..TREE["treeName"]) then
+                TREE["content"][paramLine], count = str_gsub(TREE["content"][paramLine], '(%s*[^>]*)>', '%1 '..newStr..'>')
                 if count==0 then
                     return nil
                 end
             else
-                TREE["content"][paramLine] = string.gsub(TREE["content"][paramLine], ">", "")
+                TREE["content"][paramLine] = str_gsub(TREE["content"][paramLine], ">", "")
                 paramLine = paramLine + 1
                 newStr = savedTabs..""..newStr..">"
-                table.insert(TREE["content"], paramLine, newStr)
+                t_insert(TREE["content"], paramLine, newStr)
             end
 
             --WriteXMLParserFileForTable(TREE["content"])
@@ -3711,25 +3952,25 @@ function XMLParser:Tree(treeParams)
 
             local paramLine = TREE["firstLine"]
             while ((TREE["content"][paramLine]~=nil) or (paramLine==TREE["lastLine"])) do
-                if string.find(TREE["content"][paramLine], findParamPattern) then
+                if str_find(TREE["content"][paramLine], findParamPattern) then
                     break
                 end
                 paramLine=paramLine+1
             end
 
             local newStr = ""
-            if string.find(TREE["content"][paramLine], "<"..TREE["treeName"]) then
-                TREE["content"][paramLine], count = string.gsub(TREE["content"][paramLine], '%s*'..findParamPattern, newStr)
+            if str_find(TREE["content"][paramLine], "<"..TREE["treeName"]) then
+                TREE["content"][paramLine], count = str_gsub(TREE["content"][paramLine], '%s*'..findParamPattern, newStr)
                 if count==0 then
                     return nil
                 end
             else
-                if string.find(TREE["content"][paramLine], ">") then
-                    table.remove(TREE["content"], paramLine)
+                if str_find(TREE["content"][paramLine], ">") then
+                    t_remove(TREE["content"], paramLine)
                     paramLine=paramLine-1
-                    TREE["content"][paramLine] = string.gsub(TREE["content"][paramLine], '(<?[^%s]*"?[^%s])', '%1>')
+                    TREE["content"][paramLine] = str_gsub(TREE["content"][paramLine], '(<?[^%s]*"?[^%s])', '%1>')
                 else
-                    table.remove(TREE["content"], paramLine)
+                    t_remove(TREE["content"], paramLine)
                 end
             end
 
@@ -3757,7 +3998,7 @@ function XMLParser:Tree(treeParams)
             local _itemLine = cachedItemLine or tonumber(TREE["firstLine"]) or 1
             if file and _itemLine then
                 if file[_itemLine] then
-                    local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                    local _,_, tabs = str_find(file[_itemLine], "(\t*)")
                     if not tabs then tabs = "" end
 
                     _itemLine = _itemLine + 1
@@ -3767,31 +4008,31 @@ function XMLParser:Tree(treeParams)
                         textField = textField..' '..tostring(fieldkey)..'="'..tostring(stringCustomKeyValue)..'"'
                     end
                     textField = textField..'>'
-                    if string.find(stringTextFieldValue, '\n') then
+                    if str_find(stringTextFieldValue, '\n') then
                         local str = stringTextFieldValue
-                        if string.sub(str, -1)~="\n" then
+                        if str_sub(str, -1)~="\n" then
                             str = str.."\n"
                         end
                         local lines = {}
                         local start_pos = 1
                         while true do
-                            local end_pos = string.find(str, "\n", start_pos)
+                            local end_pos = str_find(str, "\n", start_pos)
                             if not end_pos then
                                 break
                             end
-                            local line = string.sub(str, start_pos, end_pos - 1)
+                            local line = str_sub(str, start_pos, end_pos - 1)
                             line = ""..line
                             if lines[1] then
                                 line = tabs.."\t\t"..line
                             end
-                            table.insert(lines, line)
+                            t_insert(lines, line)
                             start_pos = end_pos + 1
                         end
                         for i, v in ipairs(lines) do
                             textField = textField..v..'\n'
                         end
-                        if string.sub(stringTextFieldValue, -1)~="\n" then
-                            textField = string.sub(textField, 1, -2)
+                        if str_sub(stringTextFieldValue, -1)~="\n" then
+                            textField = str_sub(textField, 1, -2)
                         else
                             textField = textField..tabs..'\t'
                         end
@@ -3801,12 +4042,12 @@ function XMLParser:Tree(treeParams)
                     textField = textField..'</'..tostring(stringTextFieldName)..'>'
 
                     if boolEnters then
-                        if not string.find(file[_itemLine], tabs..'</'..tostring(TREE["treeName"])) then
+                        if not str_find(file[_itemLine], tabs..'</'..tostring(TREE["treeName"])) then
                             textField = textField..'\n'
                         end
                     end
 
-                    table.insert(file, _itemLine, textField)
+                    t_insert(file, _itemLine, textField)
                 end
             end
         end
@@ -3833,12 +4074,12 @@ function XMLParser:Tree(treeParams)
             local _itemLine = obj._itemLine or tonumber(TREE["firstLine"]) or 1
             if file and _itemLine then
                 if file[_itemLine] then
-                    local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                    local _,_, tabs = str_find(file[_itemLine], "(\t*)")
                     if not tabs then tabs = "" end
                     local field = {}
                     while file[_itemLine] do
-                        table.insert(field, file[_itemLine])
-                        if string.find(file[_itemLine], "</"..tostring(stringTextFieldName)..">") or string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
+                        t_insert(field, file[_itemLine])
+                        if str_find(file[_itemLine], "</"..tostring(stringTextFieldName)..">") or str_find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
                             break
                         end
                         _itemLine=_itemLine+1
@@ -3846,12 +4087,12 @@ function XMLParser:Tree(treeParams)
                             break
                         end
                     end
-                    field = table.concat(field, '\n')
-                    local _,_, fieldContent = string.find(field, "<"..tostring(stringTextFieldName).."[^>]*>([^<]*)</"..tostring(stringTextFieldName)..">")
+                    field = t_concat(field, '\n')
+                    local _,_, fieldContent = str_find(field, "<"..tostring(stringTextFieldName).."[^>]*>([^<]*)</"..tostring(stringTextFieldName)..">")
                     if fieldContent then
-                        treeBody = string.gsub(fieldContent, "\t", "")
-                        if string.sub(treeBody, -1)=="\n" then
-                            treeBody = string.sub(treeBody, 1, -2)
+                        treeBody = str_gsub(fieldContent, "\t", "")
+                        if str_sub(treeBody, -1)=="\n" then
+                            treeBody = str_sub(treeBody, 1, -2)
                         end
                     end
                 end
@@ -3859,7 +4100,7 @@ function XMLParser:Tree(treeParams)
         end
 
         if boolNoLines then
-            treeBody = string.gsub(treeBody, "\n", "")
+            treeBody = str_gsub(treeBody, "\n", "")
         end
 
         parserLOG("return {"..treeBody.."}")
@@ -3886,14 +4127,14 @@ function XMLParser:Tree(treeParams)
             local _itemLine = obj._itemLine or tonumber(TREE["firstLine"]) or 1
             if file and _itemLine then
                 if file[_itemLine] then
-                    local _,_, tabs = string.find(file[_itemLine], "(\t*)")
+                    local _,_, tabs = str_find(file[_itemLine], "(\t*)")
                     if not tabs then tabs = "" end
 
                     local _itemLine_ = _itemLine
                     local field = {}
                     while file[_itemLine] do
-                        table.insert(field, file[_itemLine])
-                        if string.find(file[_itemLine], "</"..tostring(stringTextFieldName)..">") or string.find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
+                        t_insert(field, file[_itemLine])
+                        if str_find(file[_itemLine], "</"..tostring(stringTextFieldName)..">") or str_find(file[_itemLine], "</"..tostring(TREE["treeName"])..">") then
                             break
                         end
                         _itemLine=_itemLine+1
@@ -3901,15 +4142,15 @@ function XMLParser:Tree(treeParams)
                             break
                         end
                     end
-                    field = table.concat(field, '\n')
-                    stringTextFieldNewValue = string.gsub(stringTextFieldNewValue, '\n', '\n'..tabs..'\t')
-                    if string.sub(stringTextFieldNewValue, -1)=="\n" then
+                    field = t_concat(field, '\n')
+                    stringTextFieldNewValue = str_gsub(stringTextFieldNewValue, '\n', '\n'..tabs..'\t')
+                    if str_sub(stringTextFieldNewValue, -1)=="\n" then
                         stringTextFieldNewValue = stringTextFieldNewValue.."\n"..tabs
                     end
-                    local field2 = string.gsub(field, "(<"..tostring(stringTextFieldName).."[^>]*>)[^<]*(</"..tostring(stringTextFieldName)..">)", "%1"..stringTextFieldNewValue.."%2")
+                    local field2 = str_gsub(field, "(<"..tostring(stringTextFieldName).."[^>]*>)[^<]*(</"..tostring(stringTextFieldName)..">)", "%1"..stringTextFieldNewValue.."%2")
 
-                    local content = table.concat(TREE["content"], '\n')
-                    content = string.gsub(content, field, field2)
+                    local content = t_concat(TREE["content"], '\n')
+                    content = str_gsub(content, field, field2)
 
                     textField = stringTextFieldNewValue
 
@@ -4246,7 +4487,7 @@ function XMLParser:Tree(treeParams)
             local tag = TREE["treeName"]
             
             local savedTabs = ""
-            local _, _, savedTabss = string.find(content[firstLine], "(\t*)")
+            local _, _, savedTabss = str_find(content[firstLine], "(\t*)")
             if savedTabss then
                 savedTabs = savedTabss
             end
@@ -4257,7 +4498,7 @@ function XMLParser:Tree(treeParams)
                     break
                 end
                 if (content[firstLine]=="\t*") or (content[firstLine]=="%s*") or (content[firstLine]=="") then
-                    table.remove(content, firstLine)
+                    t_remove(content, firstLine)
                 end
             end
 
@@ -4278,7 +4519,7 @@ function XMLParser:Tree(treeParams)
             local tag = TREE["treeName"]
             
             local savedTabs = ""
-            local _, _, savedTabss = string.find(content[firstLine], "(\t*)")
+            local _, _, savedTabss = str_find(content[firstLine], "(\t*)")
             if savedTabss then
                 savedTabs = savedTabss
             end
@@ -4288,8 +4529,8 @@ function XMLParser:Tree(treeParams)
                 if not content[firstLine] or content[firstLine]==savedTabs.."</"..tag..">" then
                     break
                 end
-                if (string.find(content[firstLine], "/>") or string.find(content[firstLine], "</")) and not ((content[firstLine+1]=="\t*") or (content[firstLine+1]=="%s*") or (content[firstLine+1]=="")) and content[firstLine+1]~=savedTabs.."</"..tag..">" then
-                    table.insert(content, firstLine+1, "")
+                if (str_find(content[firstLine], "/>") or str_find(content[firstLine], "</")) and not ((content[firstLine+1]=="\t*") or (content[firstLine+1]=="%s*") or (content[firstLine+1]=="")) and content[firstLine+1]~=savedTabs.."</"..tag..">" then
+                    t_insert(content, firstLine+1, "")
                 end
             end
 
@@ -4353,7 +4594,7 @@ function XMLParser:Tree(treeParams)
             else
                 firstLine = forWho
             end
-            local content = _CopyTable(TREE["content"])
+            local content = table_copy(TREE["content"])
 
             parserLOG("BefWrap::\n".._TableToString(content))
 
@@ -4361,22 +4602,22 @@ function XMLParser:Tree(treeParams)
                 firstLine=firstLine+1
             end
 
-            while (content[firstLine]~=nil) and (string.find(content[firstLine], ">")==nil) do
+            while (content[firstLine]~=nil) and (str_find(content[firstLine], ">")==nil) do
                 parserLOG("removed line::"..tostring(content[firstLine]))
-                table.remove(content, firstLine)
+                t_remove(content, firstLine)
             end
             parserLOG("removed line::"..tostring(content[firstLine]))
-            table.remove(content, firstLine)
+            t_remove(content, firstLine)
 
             if type(wrapedContent)=="table" then
                 firstLine=firstLine-1
                 for i, v in ipairs(wrapedContent) do
                     parserLOG("add line::"..v)
-                    table.insert(content, firstLine+i, v)
+                    t_insert(content, firstLine+i, v)
                 end
             else
                 parserLOG("add line::"..wrapedContent)
-                table.insert(content, firstLine, wrapedContent)
+                t_insert(content, firstLine, wrapedContent)
             end
 
             parserLOG("PostWrap::\n".._TableToString(content))
@@ -4541,8 +4782,8 @@ function XMLParser:Tree(treeParams)
             if TREE["content"] then
                 local line = OBJ["_object"]["_itemLine"]
                 while ((TREE["content"][line]~=nil) or (line==TREE["lastLine"])) do
-                    if string.find(TREE["content"][line], paramKey) then
-                        local editedStr, count = string.gsub(TREE["content"][line], '(%s+)'..tostring(paramKey)..'(%s*)=(%s*)"[^"]*"', '%1'..tostring(paramKey)..'%2=%3"'..tostring(paramValue)..'"')
+                    if str_find(TREE["content"][line], paramKey) then
+                        local editedStr, count = str_gsub(TREE["content"][line], '(%s+)'..tostring(paramKey)..'(%s*)=(%s*)"[^"]*"', '%1'..tostring(paramKey)..'%2=%3"'..tostring(paramValue)..'"')
                         if count>0 then
                             TREE["content"][line] = editedStr
     
@@ -4552,7 +4793,7 @@ function XMLParser:Tree(treeParams)
                         end
                     end
                     line=line+1
-                    if string.find(TREE["content"][line-1], ">") then
+                    if str_find(TREE["content"][line-1], ">") then
                         break
                     end
                 end
@@ -4581,7 +4822,7 @@ function XMLParser:Tree(treeParams)
             if TREE["content"] then
                 local paramLine = OBJ["_object"]["_itemLine"]
                 while ((TREE["content"][paramLine]~=nil) or (paramLine==TREE["lastLine"])) do
-                    if string.find(TREE["content"][paramLine], "/>") then
+                    if str_find(TREE["content"][paramLine], "/>") then
                         break
                     end
                     paramLine=paramLine+1
@@ -4590,7 +4831,7 @@ function XMLParser:Tree(treeParams)
                 local lineForAddParam = TREE["content"][paramLine]
     
                 local savedTabs = ""
-                local _, _, savedTabss = string.find(TREE["content"][paramLine], "(\t*)")
+                local _, _, savedTabss = str_find(TREE["content"][paramLine], "(\t*)")
                 if savedTabss then
                     savedTabs = savedTabss
                 end
@@ -4601,16 +4842,16 @@ function XMLParser:Tree(treeParams)
                 end
     
                 local newStr = paramKey..''..strSpaces..'='..strSpaces..'"'..paramValue..'"'
-                if string.find(TREE["content"][paramLine], "<"..OBJ["_object"]["_itemTag"]) then
-                    TREE["content"][paramLine], count = string.gsub(TREE["content"][paramLine], '(%s*[^/]*)/>', '%1 '..newStr..' />')
+                if str_find(TREE["content"][paramLine], "<"..OBJ["_object"]["_itemTag"]) then
+                    TREE["content"][paramLine], count = str_gsub(TREE["content"][paramLine], '(%s*[^/]*)/>', '%1 '..newStr..' />')
                     if count==0 then
                         return nil
                     end
                 else
-                    TREE["content"][paramLine] = string.gsub(TREE["content"][paramLine], "/>", "")
+                    TREE["content"][paramLine] = str_gsub(TREE["content"][paramLine], "/>", "")
                     paramLine = paramLine + 1
                     newStr = savedTabs..""..newStr.." />"
-                    table.insert(TREE["content"], paramLine, newStr)
+                    t_insert(TREE["content"], paramLine, newStr)
                 end
     
                 --WriteXMLParserFileForTable(TREE["content"])
@@ -4643,25 +4884,25 @@ function XMLParser:Tree(treeParams)
     
                 local paramLine = OBJ["_object"]["_itemLine"]
                 while ((TREE["content"][paramLine]~=nil) or (paramLine==TREE["lastLine"])) do
-                    if string.find(TREE["content"][paramLine], findParamPattern) then
+                    if str_find(TREE["content"][paramLine], findParamPattern) then
                         break
                     end
                     paramLine=paramLine+1
                 end
     
                 local newStr = ""
-                if string.find(TREE["content"][paramLine], "<"..OBJ["_object"]["_itemTag"]) then
-                    TREE["content"][paramLine], count = string.gsub(TREE["content"][paramLine], '%s*'..findParamPattern, newStr)
+                if str_find(TREE["content"][paramLine], "<"..OBJ["_object"]["_itemTag"]) then
+                    TREE["content"][paramLine], count = str_gsub(TREE["content"][paramLine], '%s*'..findParamPattern, newStr)
                     if count==0 then
                         return nil
                     end
                 else
-                    if string.find(TREE["content"][paramLine], "/>") then
-                        table.remove(TREE["content"], paramLine)
+                    if str_find(TREE["content"][paramLine], "/>") then
+                        t_remove(TREE["content"], paramLine)
                         paramLine=paramLine-1
-                        TREE["content"][paramLine] = string.gsub(TREE["content"][paramLine], '(<?[^%s]*"?[^%s])', '%1 />')
+                        TREE["content"][paramLine] = str_gsub(TREE["content"][paramLine], '(<?[^%s]*"?[^%s])', '%1 />')
                     else
-                        table.remove(TREE["content"], paramLine)
+                        t_remove(TREE["content"], paramLine)
                     end
                 end
     
