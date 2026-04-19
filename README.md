@@ -139,8 +139,6 @@ end
 
 **Также обратите внимание на то, что функции для редактирования объектов и деревьев РАБОТАТЬ НЕ БУДУТ**, если применяются на подобъекты захватываемого дерева. Сначала вам следует сделать дерево-подобъект активным.
 
-По умолчанию в некоторых командах **вместо аргумента `self`** указывайте `nil` при вызове.
-
 ```c
 Class XMLParser
 {
@@ -257,22 +255,22 @@ Class XMLParser
     {
         [M] TRIGGER trigger( string TriggerName ) : public XMLParser     /* Это прямое обращение к триггеру TRIGGER. Используйте [XMLParser:init()] перед выполнением команд */
         {
-            [M] bool Add( self, int Active, table Events, table Script)      /* Добавляет триггер с именем TriggerName, ивентами Events и скриптом Script. Events и Script это таблицы, содержащие отдельные строки, где каждая строка это строка скрипта/объекта ивента */
+            [M] bool Add( int Active, table Events, table Script)      /* Добавляет триггер с именем TriggerName, ивентами Events и скриптом Script. Events и Script это таблицы, содержащие отдельные строки, где каждая строка это строка скрипта/объекта ивента */
             [M] bool Remove()        /* Удаляет триггер с именем TriggerName */
             [M] bool DoScript()      /* Безопасно выполняет скрипт триггера. Возвращает вторым значением ошибку в противном случае. Глобальные игровые методы trigger недоступны - пожалуйста, откажитесь от методов или переопределяйте trigger внутри скрипта триггера, чтобы DoScript() выполнился корректно. В противном случае в скрипте триггера есть ошибка. Помните, что манипулирование объектами на других картах извне невозможно */
             [M] bool IsActive()      /* Возвращает состояние триггера */
             [M] bool SetActive( bool Active )     /* Назначает состояние триггера */
             [M] string GetBody()     /* Возвращает скрипт триггера как строку */
             [M] table GetScript()    /* Возвращает скрипт триггера как строковую таблицу */
-            [M] string GetScriptByLine( self, int Line )            /* Возвращает строку скрипта триггера по номеру строки (относительно) */
-            [M] int GetLineByScriptContent( self, string Content )  /* Возвращает номер строки скрипта триггера по содержимому строки (относительно) */
-            [M] bool ReplaceScript( self, string NewScript )        /* Заменяет скрипт триггера новым скриптом [[]] */
-            [M] bool AddScript( self, string Script, int Line )     /* Добавляет новую часть скрипта в триггер с позицией Line, иначе в конец триггера */
+            [M] string GetScriptByLine( int Line )            /* Возвращает строку скрипта триггера по номеру строки (относительно) */
+            [M] int GetLineByScriptContent( string Content )  /* Возвращает номер строки скрипта триггера по содержимому строки (относительно) */
+            [M] bool ReplaceScript( string NewScript )        /* Заменяет скрипт триггера новым скриптом [[]] */
+            [M] bool AddScript( string Script, int Line )     /* Добавляет новую часть скрипта в триггер с позицией Line, иначе в конец триггера */
             [M] void RemoveScript()     /* Удаляет скрипт триггера */
-            [M] bool RemoveScriptLine( self, int Line or string Content )     /* Удаляет строку скрипта триггера по номеру строки или по содержимому (относительно) */
+            [M] bool RemoveScriptLine( int Line or string Content )     /* Удаляет строку скрипта триггера по номеру строки или по содержимому (относительно) */
             [M] table GetAllEvents()    /* Возвращает все ивенты триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
-            [M] event[table] GetEventById( self, const char* EventId )                        /* Возвращает ивент триггера по имени eventid. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
-            [M] event[table] GetEventByKey( self, const char* EventKey, string EventValue )   /* Возвращает ивент триггера по ключу ивента и его значению. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+            [M] event[table] GetEventById( const char* EventId )                        /* Возвращает ивент триггера по имени eventid. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
+            [M] event[table] GetEventByKey( const char* EventKey, string EventValue )   /* Возвращает ивент триггера по ключу ивента и его значению. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
             [M] bool AddEvent( table event )        /* Добавляет новый ивент в триггер. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
             [M] bool RemoveEvent( table event )     /* Удаляет ивент из триггера. Ключами ивентов могут быть: [eventid], [timeout], [ObjName], [msgid], [flypath] */
         }
