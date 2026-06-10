@@ -2,7 +2,7 @@
 
 Написанный специально для игры Ex Machina / Hard Truck Apocalypse
 
-### Note: Please translate this text, if it nessesary.
+### Note: Please translate this text, if it necessary.
 
 [comment]: <> ( Этот readme не имеет красивого оформления, поэтому используйте поиск по тексту вверху справа.)
 [comment]: <> ( <div align="center">)
