@@ -7,7 +7,7 @@
 --               написанный специально для игры
 --             Ex Machina / Hard Truck Apocalypse
 --
---                     XMLParser v1.2.0
+--                     XMLParser v1.2.1
 -- 
 -- 
 -- ====================== Автор E Jet =========================
@@ -566,7 +566,7 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "v1.2.0"
+XMLParser.version = "v1.2.1"
 XMLParser.data = {}
 local PARSER = XMLParser.data
 
@@ -604,7 +604,7 @@ PARSER.KEYS_TriggerEvent = {"eventid", "timeout", "ObjName", "msgid", "flypath"}
 PARSER.KEYS_SearchingGradient = {"Name", "name", "ObjectId", "Id", "id", "field", "_customValue"}
 PARSER.KEYS_PriorityGradient = {"ObjectId", "Id", "id", "Name", "name", "field", "Value", "ListOfItems", "Chassis", "Cabin", "Cargo", "Skin", "ListOfGuns", "Status", "Item", "Amount", "Maximum", "Description", "Difficulty", "Done"}
 
-PARSER.KEYS_FORBIDDEN = {_itemClass=1, _itemLine=1, _itemParent=1, _itemProperties=1, _itemTag=1, _itemTarget=1}
+PARSER.KEYS_FORBIDDEN = {_itemClass=1, _itemLine=1, _itemLineForItems=1, _itemParent=1, _itemProperties=1, _itemTag=1, _itemTarget=1}
 
 
 PARSER.IGNORE_ParseLines = {['<Runtime />']=1}
@@ -854,7 +854,7 @@ end
 
 local function is_file_exists(path)
     local b = false
-	local f = io_open(path, 'r')
+	local f = io_open(path or "", 'r')
 	if f then
 		b = true
 		f:close()
@@ -1010,7 +1010,7 @@ local function WriteXMLParserFileForTable(content)
     if (not content) or (not type(content)=="table") then 
         return nil 
     end
-    local path_to_file = PARSER.PATH
+    local path_to_file = PARSER.PATH or ""
 
     local file = PARSER.OPENEDFILEDESCRIPTOR
     pcall(function() return file:close() end)
@@ -1476,7 +1476,7 @@ end
 function XMLParser:ReadFile(path_to_file)
     parserLOG(":::: global method XMLParser:ReadFile ::::")
     local data
-    local f = io_open(path_to_file, 'r')
+    local f = io_open(path_to_file or "", 'r')
     if f then
         data = f:read("*all")
     end
@@ -1537,16 +1537,18 @@ end
 --g_XMLParser:createFile()
 function XMLParser:createFile(path, default_file_content)
     parserLOG(":::: global method XMLParser:createFile ::::")
-    local path = path or PARSER.PATH
+    local path = path or PARSER.PATH or ""
     local file = io_open(path, "r")
     if not file then
         file = io_open(path, "w")
-        local default_file_content = default_file_content or PARSER.XML
-        if default_file_content then PARSER.XML = default_file_content end
-        file:write(PARSER.XML)
-        file:close()
-        file = nil
-        return true
+        if file then
+            local default_file_content = default_file_content or PARSER.XML
+            if default_file_content then PARSER.XML = default_file_content end
+            file:write(PARSER.XML)
+            file:close()
+            file = nil
+            return true
+        end
     end
     file:close()
     return false
@@ -1555,7 +1557,7 @@ end
 --g_XMLParser:removeFile()
 function XMLParser:removeFile()
     parserLOG(":::: global method XMLParser:removeFile ::::")
-    local path = PARSER.PATH
+    local path = PARSER.PATH or ""
     local file = io_open(path, "r")
     if file then
         file:close()
@@ -2198,7 +2200,7 @@ function XMLParser:ReadBinary(stringPATH)
     parserLOG(":::: global method XMLParser:ReadBinary ::::")
     local path = stringPATH or "input_di8.dll" --"hta.exe"
 	
-	local f = io_open(path, "rb")
+	local f = io_open(path or "", "rb")
 	if not f then
 		return nil
 	end
@@ -2587,6 +2589,7 @@ function XMLParser:ConvertPropertiesIn(stringInputPATH, stringOutputPATH)
     parserLOG(":::: global method XMLParser:ConvertPropertiesIn ::::")
 	local outputPATH = stringOutputPATH or "func_ConvertPropertiesIn.xml"
 	local inputRoot = ""
+    local stringInputPATH = stringInputPATH or ""
 	if str_find(stringInputPATH, "dynamicscene.xml") then
 		inputRoot = "DynamicScene"
 	elseif str_find(stringInputPATH, "world.xml") then
