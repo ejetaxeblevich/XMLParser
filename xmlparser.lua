@@ -566,26 +566,26 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "v1.2.1"
+XMLParser.version = "v1.2.2"
 XMLParser.data = {}
 local PARSER = XMLParser.data
 
-local str_find = strfind or string.find
-local str_sub = strsub or string.sub
-local str_gsub = strgsub or string.gsub
-local str_rep = strrep or string.rep
-local str_len = strlen or string.len
-local str_low = strlower or string.lower
-local str_byte = strbyte or string.byte
-local str_char = strchar or string.char
+local str_find = string.find
+local str_sub = string.sub
+local str_gsub = string.gsub
+local str_rep = string.rep
+local str_len = string.len
+local str_low = string.lower
+local str_byte = string.byte
+local str_char = string.char
 
-local t_insert = tinsert or table.insert
-local t_remove = tremove or table.remove
-local t_concat = tconcat or table.concat
-local t_getn = tgetn or table.getn
+local t_insert = table.insert
+local t_remove = table.remove
+local t_concat = table.concat
+local t_getn = table.getn
 
-local io_open = iopen or io.open
-local io_lines = ilines or io.lines
+local io_open = io.open
+local io_lines = io.lines
 
 
 LOG("[I] Init Module XMLParser.lua ...")
@@ -767,82 +767,60 @@ end
 
 
 local function TranslateRUCharsToENChars(text)
-    parserLOG(":::: local function TranslateRUCharsToENChars ::::")
     local translitTable = {
-        ['à'] = 'a', ['á'] = 'b', ['â'] = 'v', ['ã'] = 'g', ['ä'] = 'd',
-        ['å'] = 'e', ['¸'] = 'yo', ['æ'] = 'zh', ['ç'] = 'z', ['è'] = 'i',
-        ['é'] = 'y', ['ê'] = 'k', ['ë'] = 'l', ['ì'] = 'm', ['í'] = 'n',
-        ['î'] = 'o', ['ï'] = 'p', ['ð'] = 'r', ['ñ'] = 's', ['ò'] = 't',
-        ['ó'] = 'u', ['ô'] = 'f', ['õ'] = 'h', ['ö'] = 'ts', ['÷'] = 'ch',
-        ['ø'] = 'sh', ['ù'] = 'sch', ['ú'] = '', ['û'] = 'y', ['ü'] = '',
-        ['ý'] = 'e', ['þ'] = 'yu', ['ÿ'] = 'ya',
+        ['à'] = 'a',  ['á'] = 'b',   ['â'] = 'v',  ['ã'] = 'g',  ['ä'] = 'd',
+        ['å'] = 'e',  ['¸'] = 'yo',  ['æ'] = 'zh', ['ç'] = 'z',  ['è'] = 'i',
+        ['é'] = 'y',  ['ê'] = 'k',   ['ë'] = 'l',  ['ì'] = 'm',  ['í'] = 'n',
+        ['î'] = 'o',  ['ï'] = 'p',   ['ð'] = 'r',  ['ñ'] = 's',  ['ò'] = 't',
+        ['ó'] = 'u',  ['ô'] = 'f',   ['õ'] = 'h',  ['ö'] = 'ts', ['÷'] = 'ch',
+        ['ø'] = 'sh', ['ù'] = 'sch', ['ú'] = '',   ['û'] = 'y',  ['ü'] = '',
+        ['ý'] = 'e',  ['þ'] = 'yu',  ['ÿ'] = 'ya',
 
-        ['À'] = 'A', ['Á'] = 'B', ['Â'] = 'V', ['Ã'] = 'G', ['Ä'] = 'D',
-        ['Å'] = 'E', ['¨'] = 'Yo', ['Æ'] = 'Zh', ['Ç'] = 'Z', ['È'] = 'I',
-        ['É'] = 'Y', ['Ê'] = 'K', ['Ë'] = 'L', ['Ì'] = 'M', ['Í'] = 'N',
-        ['Î'] = 'O', ['Ï'] = 'P', ['Ð'] = 'R', ['Ñ'] = 'S', ['Ò'] = 'T',
-        ['Ó'] = 'U', ['Ô'] = 'F', ['Õ'] = 'H', ['Ö'] = 'Ts', ['×'] = 'Ch',
-        ['Ø'] = 'Sh', ['Ù'] = 'Sch', ['Ú'] = '', ['Û'] = 'Y', ['Ü'] = '',
-        ['Ý'] = 'E', ['Þ'] = 'Yu', ['ß'] = 'Ya'
+        ['À'] = 'A',  ['Á'] = 'B',   ['Â'] = 'V',  ['Ã'] = 'G',  ['Ä'] = 'D',
+        ['Å'] = 'E',  ['¨'] = 'Yo',  ['Æ'] = 'Zh', ['Ç'] = 'Z',  ['È'] = 'I',
+        ['É'] = 'Y',  ['Ê'] = 'K',   ['Ë'] = 'L',  ['Ì'] = 'M',  ['Í'] = 'N',
+        ['Î'] = 'O',  ['Ï'] = 'P',   ['Ð'] = 'R',  ['Ñ'] = 'S',  ['Ò'] = 'T',
+        ['Ó'] = 'U',  ['Ô'] = 'F',   ['Õ'] = 'H',  ['Ö'] = 'Ts', ['×'] = 'Ch',
+        ['Ø'] = 'Sh', ['Ù'] = 'Sch', ['Ú'] = '',   ['Û'] = 'Y',  ['Ü'] = '',
+        ['Ý'] = 'E',  ['Þ'] = 'Yu',  ['ß'] = 'Ya'
     }
-
-    local result = ''
-
-    for i = 1, str_len(text) do
-        local char = str_sub(text, i, i)
-        if translitTable[char] then
-            result = result .. translitTable[char]
-        else
-            result = result .. char
-        end
-    end
-
-    return result
+    return str_gsub(text, ".", function(char) return translitTable[char] or char end)
 end
 
 
 local function TranslateENCharsToRUChars(text)
-    parserLOG(":::: local function TranslateENCharsToRUChars ::::")
-    local reverseTranslitTable = {
-        ['a'] = 'à', ['b'] = 'á', ['v'] = 'â', ['g'] = 'ã', ['d'] = 'ä',
-        ['e'] = 'å', ['yo'] = '¸', ['zh'] = 'æ', ['z'] = 'ç', ['i'] = 'è',
-        ['y'] = 'é', ['k'] = 'ê', ['l'] = 'ë', ['m'] = 'ì', ['n'] = 'í',
-        ['o'] = 'î', ['p'] = 'ï', ['r'] = 'ð', ['s'] = 'ñ', ['t'] = 'ò',
-        ['u'] = 'ó', ['f'] = 'ô', ['h'] = 'õ', ['ts'] = 'ö', ['ch'] = '÷',
-        ['sh'] = 'ø', ['sch'] = 'ù', [''] = 'ú', ['y'] = 'û', [''] = 'ü',
-        ['e'] = 'ý', ['yu'] = 'þ', ['ya'] = 'ÿ',
+    local translitTable = {
+        ['a']  = 'à', ['b']   = 'á', ['v']  = 'â', ['g']  = 'ã',  ['d']  = 'ä',
+        ['e']  = 'å', ['yo']  = '¸', ['zh'] = 'æ', ['z']  = 'ç',  ['i']  = 'è',
+        ['y']  = 'é', ['k']   = 'ê', ['l']  = 'ë', ['m']  = 'ì',  ['n']  = 'í',
+        ['o']  = 'î', ['p']   = 'ï', ['r']  = 'ð', ['s']  = 'ñ',  ['t']  = 'ò',
+        ['u']  = 'ó', ['f']   = 'ô', ['h']  = 'õ', ['ts'] = 'ö',  ['ch'] = '÷',
+        ['sh'] = 'ø', ['sch'] = 'ù', ['']   = 'ú', ['yu']  = 'þ', ['ya'] = 'ÿ',
 
-        ['A'] = 'À', ['B'] = 'Á', ['V'] = 'Â', ['G'] = 'Ã', ['D'] = 'Ä',
-        ['E'] = 'Å', ['Yo'] = '¨', ['Zh'] = 'Æ', ['Z'] = 'Ç', ['I'] = 'È',
-        ['Y'] = 'É', ['K'] = 'Ê', ['L'] = 'Ë', ['M'] = 'Ì', ['N'] = 'Í',
-        ['O'] = 'Î', ['P'] = 'Ï', ['R'] = 'Ð', ['S'] = 'Ñ', ['T'] = 'Ò',
-        ['U'] = 'Ó', ['F'] = 'Ô', ['H'] = 'Õ', ['Ts'] = 'Ö', ['Ch'] = '×',
-        ['Sh'] = 'Ø', ['Sch'] = 'Ù', [''] = 'Ú', ['Y'] = 'Û', [''] = 'Ü',
-        ['E'] = 'Ý', ['Yu'] = 'Þ', ['Ya'] = 'ß'
+        ['A']  = 'À', ['B']   = 'Á', ['V']  = 'Â', ['G']  = 'Ã',  ['D']  = 'Ä',
+        ['E']  = 'Å', ['Yo']  = '¨', ['Zh'] = 'Æ', ['Z']  = 'Ç',  ['I']  = 'È',
+        ['Y']  = 'É', ['K']   = 'Ê', ['L']  = 'Ë', ['M']  = 'Ì',  ['N']  = 'Í',
+        ['O']  = 'Î', ['P']   = 'Ï', ['R']  = 'Ð', ['S']  = 'Ñ',  ['T']  = 'Ò',
+        ['U']  = 'Ó', ['F']   = 'Ô', ['H']  = 'Õ', ['Ts'] = 'Ö',  ['Ch'] = '×',
+        ['Sh'] = 'Ø', ['Sch'] = 'Ù', ['']   = 'Ú', ['Yu']  = 'Þ', ['Ya'] = 'ß'
     }
-
     local result = ''
-
     local i = 1
-
     while i <= str_len(text) do
         local twoChar = str_sub(text, i, i + 1)
-        local twoCharLower = str_low(twoChar)
-        if reverseTranslitTable[twoCharLower] then
-            result = result .. reverseTranslitTable[twoCharLower]
+        if translitTable[twoChar] then
+            result = result .. translitTable[twoChar]
             i = i + 2
         else
             local oneChar = str_sub(text, i, i)
-            local oneCharLower = str_low(oneChar)
-            if reverseTranslitTable[oneCharLower] then
-                result = result .. reverseTranslitTable[oneCharLower]
+            if translitTable[oneChar] then
+                result = result .. translitTable[oneChar]
             else
                 result = result .. oneChar
             end
             i = i + 1
         end
     end
-
     return result
 end
 
@@ -1387,11 +1365,12 @@ local function _INTERPRETATION(Value)
     parserLOG(":::: local function _INTERPRETATION ::::")
     local interpreters = {
         AsBoolean = function()
-            if Value=="nil" then return nil end
-            if Value=="true" then return true end
-            if Value=="false" then return false end
-            if Value=="" then return nil end
-            if Value then return true else return nil end
+            if not Value then return nil end
+            if type(Value)=="userdata" then return true end
+            if tostring(Value)=="" or tostring(Value)=="nil" or (tonumber(Value) or 1)==0 then return nil end
+            if tostring(Value)=="true" or (tonumber(Value) or -1)>0 then return true end
+            if tostring(Value)=="false" or 0>(tonumber(Value) or 1) then return false end
+            return true
         end,
         AsString = function()
             if not Value then Value = "nil" end
@@ -1479,6 +1458,7 @@ function XMLParser:ReadFile(path_to_file)
     local f = io_open(path_to_file or "", 'r')
     if f then
         data = f:read("*all")
+        f:close()
     end
     return data
 end
@@ -2501,7 +2481,8 @@ function XMLParser:ReadFromBigfile(path_to_file, ItemTagName, AttributeName, Att
                 _itemChilds = {}
             }
 
-            if name == itemTag then
+            local isRoot = name == itemTag and (depth == 1 or stack[depth - 1]._itemTag ~= itemTag)
+            if isRoot then
                 current = node
                 itemDepth = depth
                 if (attrs[attrName] == attrValue) or fastMode then
