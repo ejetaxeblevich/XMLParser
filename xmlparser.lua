@@ -131,11 +131,11 @@
 --
 -- lua
 -- [[
---     g_XMLParser = require("data\\gamedata\\lua_lib\\xmlparser.lua")
---     if not g_XMLParser then
+--     XMLParser = require("data\\gamedata\\lua_lib\\xmlparser.lua")
+--     if not XMLParser then
 --         LOG("[E] Could not find global xmlparser.lua...")
 --     else
---         g_XMLParser:init("data\\gamedata\\ModStats.xml", "ModStats", nil, false)
+--         XMLParser:init("data\\gamedata\\ModStats.xml", "ModStats", nil, false)
 --     end
 -- ]]
 --
@@ -366,7 +366,7 @@
 --
 -- lua
 -- [[
---     local XMLParser = g_XMLParser    --> Получаем объект парсера lua-модуля, загруженного с помощью кода выше
+--     local XMLParser = XMLParser    --> Получаем объект парсера lua-модуля, загруженного с помощью кода выше
 --     if XMLParser then
 --         local success, file = XMLParser:init('data\\gamedata\\my_xml_file.xml', "RootTagName", nil, false)   --> Инициализируем точку входа парсера в файл с заданным корневым тегом "RootTagName" или любым другим желаемым - "указатель" парсера захватит желаемое дерево
 --         if success then
