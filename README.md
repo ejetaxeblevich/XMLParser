@@ -10,6 +10,8 @@
 [comment]: <> ( <img width="114" height="92" alt="image" src="https://github.com/user-attachments/assets/9ed52681-407d-44c1-8a02-6df8c0cbd563" />)
 [comment]: <> ( </div>)
 
+> [!WARNING]
+> Этот ReadMe акутален только для последней `v1.2.2` версии XMLParser!
 
 ## ЧТО ЭТО
 
