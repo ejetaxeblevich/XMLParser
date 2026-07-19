@@ -7,7 +7,7 @@
 --               написанный специально для игры
 --             Ex Machina / Hard Truck Apocalypse
 --
---                     XMLParser v1.2.2
+--                     XMLParser v1.2.3
 -- 
 -- 
 -- ====================== Автор E Jet =========================
@@ -566,7 +566,7 @@
 
 local XMLParser = {}
 XMLParser.__index = XMLParser
-XMLParser.version = "v1.2.2"
+XMLParser.version = "v1.2.3"
 XMLParser.data = {}
 local PARSER = XMLParser.data
 
@@ -826,7 +826,7 @@ end
 
 
 local function string_strip(str)
-	return str_gsub(str, "^%s*(.-)%s*$", "%1")
+	return (str_gsub(str, "^%s*(.-)%s*$", "%1"))
 end
 
 
