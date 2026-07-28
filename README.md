@@ -1720,7 +1720,7 @@ Class OBJ functions.
 
 ```xml
 <Ware                 --> Open tag
-    Name="Картошка"                         
+    Name="Potatoe"                         
 />                    --> Close tag
 ```
 ```xml
