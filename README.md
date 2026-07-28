@@ -1,33 +1,86 @@
-# ФАЙЛОВЫЙ LUA-МОДУЛЬ
+<a id="top"></a>
 
-Написанный специально для игры Ex Machina / Hard Truck Apocalypse
+<div align="center">
 
-> [!NOTE]
-> ***Please translate this text, if it necessary.***
+# XMLParser.lua
 
-[comment]: <> ( Этот readme не имеет красивого оформления, поэтому используйте поиск по тексту вверху справа.)
-[comment]: <> ( <div align="center">)
-[comment]: <> ( <img width="114" height="92" alt="image" src="https://github.com/user-attachments/assets/9ed52681-407d-44c1-8a02-6df8c0cbd563" />)
-[comment]: <> ( </div>)
+***ФАЙЛОВЫЙ LUA-МОДУЛЬ,*** *написанный специально для игры [Ex Machina](https://store.steampowered.com/app/285500/Hard_Truck_Apocalypse__Ex_Machina/)*
+
+
+***LUA-MODULE FOR FILES,*** *written specifically for the game [Hard Truck Apocalypse](https://store.steampowered.com/app/285500/Hard_Truck_Apocalypse__Ex_Machina/)*
+
+**Lua 5.0**
+
+<img src="exm_xmlparser_demo.jpg" alt="exm_xmlparser_demo_jpg" width="700" />
+
+***
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;">Содержание</th>
+      <th style="text-align: center;">Table of contents (machine translation)</th>
+    </tr>
+  </thead>
+  <tbody align="center">
+    <tr>
+      <td><a href="#wtf_ru">Краткое описание</a></td>
+      <td><a href="#wtf_en">Brief description</a></td>
+    </tr>
+    <tr>
+      <td><a href="#allAboutIt_ru">Все инструкции для моддеров</a></td>
+      <td><a href="#allAboutIt_en">All instructions for modders</a></td>
+    </tr>
+    <tr>
+      <td><a href="#allFunctions_ru">Все методы и функции</a></td>
+      <td><a href="#allFunctions_en">All methods and functions</a></td>
+    </tr>
+    <tr>
+      <td><a href="#exampleScriptForReading_ru">Пример использования методов</a></td>
+      <td><a href="#exampleScriptForReading_en">Example of using methods</a></td>
+    </tr>
+    <tr>
+      <td><a href="#exampleParams_ru">Параметры xml объектов lua-модуля</a></td>
+      <td><a href="#exampleParams_en">Parameters of xml objects of the lua-module</a></td>
+    </tr>
+    <tr>
+      <td><a href="#whatIsModuleItems_ru">Xml объекты lua-модуля</a></td>
+      <td><a href="#whatIsModuleItems_en">Xml objects of the lua-module</a></td>
+    </tr>
+    <tr>
+      <td><a href="#tipsAndCodeExamples_ru">Советы и примеры скриптов</a></td>
+      <td><a href="#tipsAndCodeExamples_en">Tips and examples of scripts</a></td>
+    </tr>
+    <tr>
+      <td><a href="#detailsAndThanks_ru">Подробности и выражение благодарности</a></td>
+      <td><a href="#detailsAndThanks_en">Details and gratitude</a></td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
 
 > [!WARNING]
 > Этот ReadMe акутален только для `v1.2.2` версии XMLParser и выше!
+>
+> This ReadMe is relevant only for `v1.2.2` versions of XMLParser and above!
+
+***
+
+<a id="wtf_ru"></a>
 
 ## ЧТО ЭТО
-
 
 Универсальный lua-модуль, который может использоваться для **ЧТЕНИЯ** и **ЗАПИСИ** .xml файлов **через скрипты** любой модификации внутри игры.
 
 Вы сможете прочитать xml дерево, получить значения его объектов и использовать их в игре. Кроме того, здесь имеется, не весть какой, но конструктор, который позволит вам создавать файлы, а затем записывать/читать деревья и объекты внутри них.
-
-> ![ModuleDemoJpg](exm_xmlparser_demo.jpg)
-> exm_xmlparser_demo.jpg
 
 ### ВОЗМОЖНОСТИ
 - **Чтение** - легко узнать ранее недоступную информацию из игровых ресурсов!
 - **Запись** - можно редактировать существующие значения в файлах, создавать новые или удалять старые! Вполне реально записать в свой `xml` файл любую информацию, так её хранить и получать в любое время!
 - **Крупный список разных функций** - для гибкого и точечного использования модуля!
 
+<a id="allAboutIt_ru"></a><a href="#top">Наверх ↑</a>
 
 ### Дисклеймер
 
@@ -43,9 +96,6 @@ LUA-МОДУЛЬ РАСПРОСТРАНЯЕТСЯ СВОБОДНО "КАК ЕС�
 
 
 ## КАК ЭТО ИСПОЛЬЗОВАТЬ
-
-> [!TIP]
-> Другую помощь можно найти [здесь](https://github.com/ejetaxeblevich/XMLParser/blob/main/helpinfo.md).
 
 Почему это "модуль" а не любой другой файл с lua скриптами? Хотя он таким и является...
 - Потому что этот файл - таблица функций XMLParser (далее класс), который имеет свои собственные методы и функции, что очень похоже на серьезную тему. Наверное. Типа. Я хз...
@@ -85,36 +135,17 @@ local Gde = CVector(1,2,3)
 local Gde.y = g_ObjCont:GetHeight(Gde.x, Gde.z)  --> метод на объект
 ```
 
-После загрузки модуля в игру следует инициализировать его работу через метод `init()`. Это необходимо, чтобы указать парсеру файл для "анализа" и имя главного корня xml (дерева). Функция может быть вызвана вновь в любой момент.
-
-### ФУНКЦИЯ `init()`
-```lua
-XMLParser:init(path_to_file, root_tag_in_file, default_file_content, bLOG)
-```
-
-`path_to_file`            - путь к xml файлу *[string]*;
-
-`root_tag_in_file`        - имя главного xml корня (дерева) в файле *[string]*;
-
-`default_file_content`    - (необязательно) содержимое xml файла по умолчанию (при создании файла), указывается как пример `example_content` ниже *[string]*;
-
-`bLOG`                    - (необязательно) разрешает/запрещает принтить (выводить) всю дебаг информацию в лог и консоль игры *[bool]*.
-
-
-```lua
-local example_content = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<Root>\n<!-- здесь ваши данные -->\n</Root>'
-```
-
 ### Пример кода загрузки
 
 ```lua
 XMLParser = require("data\\gamedata\\lua_lib\\xmlparser.lua")
 if not XMLParser then
     LOG("[E] Could not find global xmlparser.lua...")
-else
-    XMLParser:init("data\\gamedata\\ModStats.xml", "ModStats", nil, false)
 end
 ```
+
+После загрузки модуля в игру можно инициализировать его работу через метод `init()` (либо другой) для выбора файла. Функция может быть вызвана вновь в любой момент.
+
 
 ## ТЕХНИКА БЕЗОПАСНОСТИ
 
@@ -135,6 +166,7 @@ end
 - ***ЗАПРЕЩАЕТСЯ*** использовать этот lua-модуль в своих модах без указания авторства. А то натравлю порчу и наколдую недельный понос 😡 
 *Шутка 💋*
 
+<a id="allFunctions_ru"></a><a href="#top">Наверх ↑</a>
 
 ## ФУНКЦИИ И МЕТОДЫ
 
@@ -143,9 +175,9 @@ end
 За время разработки и обновлений тут уже скопилось достаточно много функций разной полезности и уровня яндередева, но тем не менее, некоторые из них всё так же остаются полезными.
 
 > [!IMPORTANT]
-> **Обратите внимание**, что дочерний класс должен вызывать главный метод своего родительского класса вплоть до XMLParser.
+> Обратите внимание, что дочерний класс должен вызывать главный метод своего родительского класса вплоть до XMLParser.
 >
-> **Также обратите внимание на то, что функции для редактирования объектов и деревьев РАБОТАТЬ НЕ БУДУТ**, если применяются на подобъекты захватываемого дерева. Сначала вам следует сделать дерево-подобъект активным.
+> Функции для редактирования объектов и деревьев **РАБОТАТЬ НЕ БУДУТ**, если применяются на подобъекты захватываемого дерева. Сначала вам следует сделать дерево-подобъект активным.
 
 > [!TIP]
 > Вы можете скроллить код ниже вправо и влево! Наведите курсор на полотно и колесиком мыши с помощью `shift` двигайте его!
@@ -289,6 +321,8 @@ Class XMLParser
 }
 ```
 
+<a id="exampleScriptForReading_ru"></a><a href="#top">Наверх ↑</a>
+
 ### Пример использования методов
 
 ```lua
@@ -312,6 +346,8 @@ if XMLParser then
     end
 end
 ```
+
+<a id="exampleParams_ru"></a><a href="#top">Наверх ↑</a>
 
 ## ОБРАЗЕЦ Params ДЕРЕВА/ОБЪЕКТА
 
@@ -341,6 +377,8 @@ local objectParams = {
     Param4 = "value",
 }
 ```
+
+<a id="whatIsModuleItems_ru"></a><a href="#top">Наверх ↑</a>
 
 ## Что такое "дерево"
 
@@ -374,9 +412,9 @@ Class TREE команды.
 ```xml
 <Key Name="Field">64</Key>
 
-<Key Name="Текст">Первая строка текста
+<Text Name="Текст">Первая строка текста
     Вторая строка текста
-</Key>
+</Text>
 
 <Key>       --> Плохой пример поля без уникального параметра имени или айди
 </Key>
@@ -403,22 +441,35 @@ Class OBJ команды.
 <Object />       --> Плохой пример
 ```
 
+## Пример `example_content` для `init`
+
+```lua
+local example_content = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<Root>\n<!-- здесь ваши данные -->\n</Root>'
+```
+
+<a id="tipsAndCodeExamples_ru"></a><a href="#top">Наверх ↑</a>
+
 ## СОВЕТЫ
 
-- Если вы читаете небольшие файлы, можете использовать образец выше с `XMLParser:init()`. Его легко контролировать и проводить всякие проверки.
+- Если вы читаете **небольшие файлы**, можете использовать образец выше с `XMLParser:init()`. Его легко контролировать и проводить всякие проверки.
 
-- Если вы читаете огромные файлы со сложной структурой, настоятельно рекомендую рассмотреть вариант с "очередью": `openQueue()` и `closeQueue()`. Он будет наиболее "оптимизированным" вариантом, который лучше справляется с большими файлами - игра заметно меньше страдает. Этот вариант сложнее поддается на проверки.
+- Если вы хотите **узнать информацию из огромных файлов**, например, получить множество объектов из файла сохранения, стоит использовать `ReadFromBigfile()`.
+
+- Если вы читаете **большие файлы, но хотите их редактировать**, настоятельно рекомендую рассмотреть вариант с "очередью": `openQueue()` и `closeQueue()`. Он будет наиболее "оптимизированным" вариантом, который лучше справляется с большими файлами - игра заметно меньше страдает. Этот вариант сложнее поддается на проверки.
+
+
 Приведу несколько готовых скриптов-примеров:
+
+### Получим XMLParser-объект игрока из сохранения и отдельно запишем ему новое значение денег
 ```lua
---Получим XMLParser-объект игрока из сохранения и отдельно запишем ему новое значение денег
 local path_to_savefile = 'data\\profiles\\Player\\saves\\00000000\\maps\\currentmap.xml'
 XMLParser:openQueue( path_to_savefile )
 local PLAYER = XMLParser:GetItemFromFile('Name%s*=%s*"Player1"', "Object", "DynamicScene")
 XMLParser:SetItemValueInFile('Name%s*=%s*"Player1"', "Object", "DynamicScene", 'Money', '%d*', '99999999')
 XMLParser:closeQueue()
 ```
+### Изменим текст некоторых реплик из dialogsglobal.xml
 ```lua
---Изменим текст некоторых реплик из dialogsglobal.xml
 local path_to_dialogsglobal = 'data\\if\\diz\\dialogsglobal.xml'
 XMLParser:openQueue( path_to_dialogsglobal )
 XMLParser:SetItemValueInFile('name%s*=%s*"Man_dlg0_1"', "Reply", "DialogsResource", "text", "текст для замены", "этот текст был заменен")
@@ -433,8 +484,8 @@ if RepliesManager then
     RepliesManager:Init()
 end
 ```
+### Найдем и удалим все ненужные объекты из world.xml
 ```lua
---Найдем и удалим все ненужные объекты из world.xml
 local path_to_world = 'data\\maps\\r1m1\\world.xml'
 local tag = "Node"
 local folder = "World"
@@ -448,8 +499,12 @@ if item then
 end
 XMLParser:closeQueue()
 ```
+### Получим XMLParser-объект *ВСЕЙ* dynamicscene из сохранения
+```lua
+local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\00000066\\maps\\currentmap.xml', "DynamicScene", nil, nil, nil, nil)
+```
 
-- Для получения множества объектов из файла, таких как файл сохранения, стоит использовать `ReadFromBigfile()`.
+<a id="detailsAndThanks_ru"></a><a href="#top">Наверх ↑</a>
 
 ## ПОДРОБНЕЕ
 
@@ -462,4 +517,6 @@ XMLParser:closeQueue()
 
     E Jet: Это заколдованный парсер в котором хочется срать.
 
-Благодарность за идею скрипта захвата атрибутов: [stakanyash](https://github.com/stakanyash).
+Благодарность [stakanyash](https://github.com/stakanyash) за идею скрипта захвата атрибутов!
+
+<a href="#top">Наверх ↑</a>
