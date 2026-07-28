@@ -1507,7 +1507,7 @@ Class XMLParser
        Takes table keys from PARSER.KEYS_SearchingGradient if nil. */
 
 
-    /* Experimental script branch. Allows you to control the triggers of other cards */
+    /* Experimental script branch. Allows you to control the triggers of other maps */
 
     Class TRIGGER
     {
