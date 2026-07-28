@@ -283,7 +283,7 @@ Or rather, the letters after the *mysterious* `[M]` and before the function itse
 |`void`|The function does not return ANYTHING. This value will always be `nil` (empty)|
 |`string`|Returns a string with some characters-letters. These values can be compared `==` `~=` as constants or used somewhere else.|
 |`int`|Returns a whole number. How can they be compared `==` `~=` `>=` `>`, It can also be used in mathematical operations for its intended purpose.|
-|`bool`|Returns true `true` or false `false'. In some cases, it may return `nil`. This can be used as a check.|
+|`bool`|Returns true `true` or false `false`. In some cases, it may return `nil`. This can be used as a check.|
 |`table`|Returns a table (list, dictionary). You can immediately take a key from the table, or you can iterate through this table in a loop (see below). In a game, many entities can be regarded as a table by data type, but not every one of them can be read.|
 |`descriptor`|Returns the lua file descriptor of an open file. With it, the file is *held in memory* of the game, read and edited.|
 |`tuple` or `&`|Returns multiple values one after the other. This is not a data type. *Catch* multiple values like this: `local a, b, c = Func()`|
