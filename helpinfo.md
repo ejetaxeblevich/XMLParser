@@ -349,7 +349,6 @@ for key, value in pairs(tbl) do
 end
 ```
 ```lua
---если нашли нужное значение
 for key, value in pairs(tbl) do
     if key == "_itemTag" then
         LOG(value)
