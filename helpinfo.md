@@ -377,7 +377,7 @@ if type(value)=="table" then
 end
 ```
 
-***ALL THE LOOPS OVERLOAD THE GAME*** depending on the number of iterations (thousands+) and operations inside the loop body. Cycles within cycles are highly undesirable, * but who abuses them at all? :))))*
+***ALL THE LOOPS OVERLOAD THE GAME*** depending on the number of iterations (thousands+) and operations inside the loop body. Cycles within cycles are highly undesirable, *but who abuses them at all? :))))*
 
 <a href="#top">Go up ↑</a>
 
