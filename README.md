@@ -75,6 +75,8 @@
 
 Вы сможете прочитать xml дерево, получить значения его объектов и использовать их в игре. Кроме того, здесь имеется, не весть какой, но конструктор, который позволит вам создавать файлы, а затем записывать/читать деревья и объекты внутри них.
 
+> Задача lua-модуля - как-то упростить работу участникам сообщества в создании модификаций, если им сложно реализовать что-то самостоятельно.
+
 ### ВОЗМОЖНОСТИ
 - **Чтение** - легко узнать ранее недоступную информацию из игровых ресурсов!
 - **Запись** - можно редактировать существующие значения в файлах, создавать новые или удалять старые! Вполне реально записать в свой `xml` файл любую информацию, так её хранить и получать в любое время!
@@ -950,6 +952,8 @@ local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\0
 A universal lua module that can be used to **READ** and **WRITE** .xml files **through scripts** of any modification inside the game.
 
 You can read the xml tree, get the values of its objects and use them in the game. In addition, there is, I don't know what, but a constructor that will allow you to create files, and then write/read trees and objects inside them.
+
+> The task of the lua-module is to somehow simplify the work of community members in creating modifications if it is difficult for them to implement something on their own.
 
 ### FEATURES
 - **Reading** - It's easy to learn previously unavailable information from game resources!
