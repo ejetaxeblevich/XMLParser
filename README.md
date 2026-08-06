@@ -1,5 +1,3 @@
-<a id="top"></a>
-
 <div align="center">
 
 # XMLParser.lua
@@ -10,6 +8,10 @@
 ***LUA-MODULE FOR FILES,*** *written specifically for the game [Hard Truck Apocalypse](https://store.steampowered.com/app/285500/Hard_Truck_Apocalypse__Ex_Machina/)*
 
 **Lua 5.0**
+
+<a id="top"></a>
+
+![XMLParserVersion](https://img.shields.io/badge/Latest%20version-1.2.3-blue) ![XMLParserDownloads](https://img.shields.io/badge/Total%20downloads-3%2B-green)
 
 <img src="exm_xmlparser_demo.jpg" alt="exm_xmlparser_demo_jpg" width="800" />
 
