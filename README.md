@@ -11,7 +11,7 @@
 
 <a id="top"></a>
 
-![XMLParserVersion](https://img.shields.io/badge/Latest%20version-1.2.3-blue) ![XMLParserDownloads](https://img.shields.io/badge/Total%20downloads-3%2B-green)
+![XMLParserStatus](https://img.shields.io/badge/Status-Produced-orange?style=for-the-badge) ![XMLParserVersion](https://img.shields.io/badge/Latest%20version-1.2.3-blue?style=for-the-badge) ![XMLParserDownloads](https://img.shields.io/github/downloads/ejetaxeblevich/XMLParser/total?label=Total%20downloads&color=green&style=for-the-badge)
 
 <img src="exm_xmlparser_demo.jpg" alt="exm_xmlparser_demo_jpg" width="800" />
 
