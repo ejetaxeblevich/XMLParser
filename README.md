@@ -84,7 +84,11 @@
 - **Запись** - можно редактировать существующие значения в файлах, создавать новые или удалять старые! Вполне реально записать в свой `xml` файл любую информацию, так её хранить и получать в любое время!
 - **Крупный список разных функций** - для гибкого и точечного использования модуля!
 
-<a id="allAboutIt_ru"></a><a href="#top">Наверх ↑</a>
+<a id="allAboutIt_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ### Дисклеймер
 
@@ -170,7 +174,11 @@ end
 - ***ЗАПРЕЩАЕТСЯ*** использовать этот lua-модуль в своих модах без указания авторства. А то натравлю порчу и наколдую недельный понос 😡 
 *Шутка 💋*
 
-<a id="allFunctions_ru"></a><a href="#top">Наверх ↑</a>
+<a id="allFunctions_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ## ФУНКЦИИ И МЕТОДЫ
 
@@ -744,7 +752,11 @@ Class XMLParser
 }
 ```
 
-<a id="exampleScriptForReading_ru"></a><a href="#top">Наверх ↑</a>
+<a id="exampleScriptForReading_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ### Пример использования методов
 
@@ -769,7 +781,11 @@ if XMLParser then       --> Получаем объект парсера lua-м�
 end
 ```
 
-<a id="exampleParams_ru"></a><a href="#top">Наверх ↑</a>
+<a id="exampleParams_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ## ОБРАЗЕЦ Params ДЕРЕВА/ОБЪЕКТА
 
@@ -800,7 +816,11 @@ local objectParams = {
 }
 ```
 
-<a id="whatIsModuleItems_ru"></a><a href="#top">Наверх ↑</a>
+<a id="whatIsModuleItems_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ## Что такое "дерево"
 
@@ -869,7 +889,11 @@ Class OBJ команды.
 local example_content = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<Root>\n<!-- здесь ваши данные -->\n</Root>'
 ```
 
-<a id="tipsAndCodeExamples_ru"></a><a href="#top">Наверх ↑</a>
+<a id="tipsAndCodeExamples_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ## СОВЕТЫ
 
@@ -926,7 +950,11 @@ XMLParser:closeQueue()
 local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\00000066\\maps\\currentmap.xml', "DynamicScene", nil, nil, nil, nil)
 ```
 
-<a id="detailsAndThanks_ru"></a><a href="#top">Наверх ↑</a>
+<a id="detailsAndThanks_ru"></a>
+
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ## ПОДРОБНЕЕ
 
@@ -941,7 +969,9 @@ local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\0
 
 Благодарность [stakanyash](https://github.com/stakanyash) за идею скрипта захвата атрибутов!
 
-<a href="#top">Наверх ↑</a>
+<div align="right">
+  <a href="#top">Наверх ↑</a>
+</div>
 
 ----
 
@@ -962,7 +992,11 @@ You can read the xml tree, get the values of its objects and use them in the gam
 - **Record** - you can edit existing values in files, create new ones or delete old ones! It is quite realistic to write any information into your xml file, so it can be stored and received at any time!
 - **Large list of different functions** - for flexible and point-to-point use of the module!
 
-<a id="allAboutIt_en"></a><a href="#top">Go up ↑</a>
+<a id="allAboutIt_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ### Disclaimer
 
@@ -1048,7 +1082,11 @@ After loading the module into the game, you can initialize its operation using t
 - ***FORBIDDEN*** to use this lua module in your mods without attribution. Otherwise, I'll set off a spell and conjure up a week's diarrhea. 
 *A joke 💋*
 
-<a id="allFunctions_en"></a><a href="#top">Go up ↑</a>
+<a id="allFunctions_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ## FUNCTIONS AND METHODS
 
@@ -1622,7 +1660,11 @@ Class XMLParser
 }
 ```
 
-<a id="exampleScriptForReading_en"></a><a href="#top">Go up ↑</a>
+<a id="exampleScriptForReading_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ### Example of using methods
 
@@ -1647,7 +1689,11 @@ if XMLParser then   --> We get the lua module parser object loaded using the cod
 end
 ```
 
-<a id="exampleParams_en"></a><a href="#top">Go up ↑</a>
+<a id="exampleParams_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ## SAMPLE Params OF A TREE/OBJECT
 
@@ -1678,7 +1724,11 @@ local objectParams = {
 }
 ```
 
-<a id="whatIsModuleItems_en"></a><a href="#top">Go up ↑</a>
+<a id="whatIsModuleItems_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ## What is a "tree"
 
@@ -1747,7 +1797,11 @@ Class OBJ functions.
 local example_content = '<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>\n<Root>\n<!-- here your data -->\n</Root>'
 ```
 
-<a id="tipsAndCodeExamples_en"></a><a href="#top">Go up ↑</a>
+<a id="tipsAndCodeExamples_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ## TIPS
 
@@ -1804,7 +1858,11 @@ XMLParser:closeQueue()
 local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\00000066\\maps\\currentmap.xml', "DynamicScene", nil, nil, nil, nil)
 ```
 
-<a id="detailsAndThanks_en"></a><a href="#top">Go up ↑</a>
+<a id="detailsAndThanks_en"></a>
+
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
 
 ## LEARN MORE
 
@@ -1819,4 +1877,6 @@ You can find out how to decipher the `table` and some small explanations [here](
 
 Thanks to [stakanyash](https://github.com/stakanyash) for the idea of an attribute capture script!
 
-<a href="#top">Go up ↑</a>
+<div align="right">
+  <a href="#top">Go up ↑</a>
+</div>
