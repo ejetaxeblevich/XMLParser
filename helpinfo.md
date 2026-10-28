@@ -38,7 +38,7 @@
 # "Я вообще ничего не понимаю!"
 Возможно, вам следует для начала посмотреть [видео-туториалы от Павлика RPG](https://www.youtube.com/playlist?list=PLhr7tv0-Tfe97ymmkKnD_wgLVoaGxoJhv), там автор затрагивает самые основные принципы написания скриптов.
 
-Или ознакомиться с уроками по lua Ex Machina для самых маленьких (Work in progress)
+Или ознакомиться с уроками по lua Ex Machina для самых маленьких (Work in progress): [Короткая справка (текст)](https://github.com/ejetaxeblevich/ejetaxeblevich/blob/main/LuaForDummies.md)
 
 Если вы уже имеете базовые знания и можете визуально отличить `lua` от `c++`, ознакомились с [общим ReadMe у XMLParser](https://github.com/ejetaxeblevich/XMLParser/blob/main/README.md), тогда вы уже большой молодец!
 
