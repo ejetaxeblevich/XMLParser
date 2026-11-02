@@ -38,7 +38,7 @@
 # "Я вообще ничего не понимаю!"
 Возможно, вам следует для начала посмотреть [видео-туториалы от Павлика RPG](https://www.youtube.com/playlist?list=PLhr7tv0-Tfe97ymmkKnD_wgLVoaGxoJhv), там автор затрагивает самые основные принципы написания скриптов.
 
-Или ознакомиться с уроками по lua Ex Machina для самых маленьких (Work in progress): [Короткая справка (текст)](https://github.com/ejetaxeblevich/ejetaxeblevich/blob/main/LuaForDummies.md)
+Или ознакомиться с уроками по lua Ex Machina для самых маленьких: [Текстовая справка](https://github.com/ejetaxeblevich/ejetaxeblevich/blob/main/LuaForDummies.md)
 
 Если вы уже имеете базовые знания и можете визуально отличить `lua` от `c++`, ознакомились с [общим ReadMe у XMLParser](https://github.com/ejetaxeblevich/XMLParser/blob/main/README.md), тогда вы уже большой молодец!
 
@@ -214,7 +214,7 @@ end
 # "I don't understand anything at all!"
 Perhaps you should start by watching [Pavlik RPG Video tutorials](https://www.youtube.com/playlist?list=PLhr7tv0-Tfe97ymmkKnD_wgLVoaGxoJhv), where the author touches on the most basic principles of writing scripts.
 
-Or read the lessons on lua Ex Machina for the youngest (Work in progress)
+Or read the lessons on lua Ex Machina for the youngest: [Text Help (RU)](https://github.com/ejetaxeblevich/ejetaxeblevich/blob/main/LuaForDummies.md)
 
 If you already have basic knowledge and can visually distinguish `lua` from `c++`, check out the [XMLParser general ReadMe](https://github.com/ejetaxeblevich/XMLParser/blob/main/README.md), then you're already doing a great job!
 
