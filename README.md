@@ -194,7 +194,9 @@ end
 >
 > Функции для редактирования объектов и деревьев **РАБОТАТЬ НЕ БУДУТ**, если применяются на подобъекты захватываемого дерева. Сначала вам следует сделать дерево-подобъект активным.
 
-> [!TIP]
+<details>
+<summary><h3>Развернуть/свернуть список функций и методов</h3></summary>
+
 > Вы можете скроллить код ниже вправо и влево! Наведите курсор на полотно и колесиком мыши с помощью `shift` двигайте его!
 
 ```c
@@ -755,6 +757,8 @@ Class XMLParser
 }
 ```
 
+</details>
+
 <a id="exampleScriptForReading_ru"></a>
 
 <div align="right">
@@ -1102,7 +1106,9 @@ During the development and updates, there have already accumulated quite a lot o
 >
 > Functions for editing objects and trees **WILL NOT WORK** if they are applied to subobjects of the captured tree. First, you should make the tree-subobject active.
 
-> [!TIP]
+<details>
+<summary><h3>Expand/collapse the list of functions and methods</h3></summary>
+
 > You can scroll the code below to the right and left! Hover the cursor over the canvas and use the mouse wheel to move it using `shift`!
 
 ```c
@@ -1662,6 +1668,8 @@ Class XMLParser
     }
 }
 ```
+
+</details>
 
 <a id="exampleScriptForReading_en"></a>
 
