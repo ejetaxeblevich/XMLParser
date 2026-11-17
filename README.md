@@ -62,6 +62,10 @@
       <td><a href="#tipsAndCodeExamples_en">Tips and examples of scripts</a></td>
     </tr>
     <tr>
+      <td><a href="#licensing_ru">Лицензирование</a></td>
+      <td><a href="#licensing_en">Licensing</a></td>
+    </tr>
+    <tr>
       <td><a href="#detailsAndThanks_ru">Подробности и выражение благодарности</a></td>
       <td><a href="#detailsAndThanks_en">Details and gratitude</a></td>
     </tr>
@@ -957,11 +961,21 @@ XMLParser:closeQueue()
 local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\00000066\\maps\\currentmap.xml', "DynamicScene", nil, nil, nil, nil)
 ```
 
-<a id="detailsAndThanks_ru"></a>
+<a id="licensing_ru"></a>
 
 <div align="right">
   <a href="#top">Наверх ↑</a>
 </div>
+
+## Лицензирование
+
+Проект распространяется в полном виде только на Github.com. Распространение файлов на других сайтах посторонними людьми не разрешено.
+
+Исходный код проекта лицензирован под MIT-подобной лицензией (исключая коммерческое использование) и может быть свободно использован как основа для создания ваших собственных модов. Пожалуйста, не забывайте сохранять текст лицензии и ссылку на проект, если используете его части.
+
+Для подробностей, пожалуйста, ознакомьтесь с полным текстом лицензии в файле `LICENCE`.
+
+<a id="detailsAndThanks_ru"></a>
 
 ## ПОДРОБНЕЕ
 
@@ -1869,11 +1883,21 @@ XMLParser:closeQueue()
 local dynamicscene = XMLParser:ReadFromBigfile('data\\profiles\\Player\\saves\\00000066\\maps\\currentmap.xml', "DynamicScene", nil, nil, nil, nil)
 ```
 
-<a id="detailsAndThanks_en"></a>
+<a id="licensing_en"></a>
 
 <div align="right">
   <a href="#top">Go up ↑</a>
 </div>
+
+## Licensing
+
+The project is distributed in its entirety only to Github.com. Distribution of files on other sites by unauthorized people is not allowed.
+
+The source code of the project is licensed under an MIT-like license (excluding commercial use) and can be freely used as a basis for creating your own mods. Please do not forget to save the license text and the link to the project if you use parts of it.
+
+For details, please read the full license text in the file `LICENCE`.
+
+<a id="detailsAndThanks_en"></a>
 
 ## LEARN MORE
 
