@@ -1,6 +1,6 @@
 <div align="center">
 
-# XMLParser.lua
+# XMLParser
 
 ***ФАЙЛОВЫЙ LUA-МОДУЛЬ,*** *написанный специально для игры [Ex Machina](https://store.steampowered.com/app/285500/Hard_Truck_Apocalypse__Ex_Machina/)*
 
